@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Generated files
+*.generated.ts
+prisma/generated/
+*.min.js
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Environment
+.env
+.env.*
+
+
