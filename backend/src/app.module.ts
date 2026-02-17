@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { PrismaService } from "./shared/infrastructure/prisma.service";
 import { ServiceOrderModule } from "./modules/service-order/service-order.module";
+import { IdentityAccessModule } from "./modules/identity-access/identity-access.module";
+import { OrganizationModule } from "./modules/organization/organization.module";
 import { HealthController } from "./shared/presentation/health.controller";
 
 /**
@@ -10,7 +12,7 @@ import { HealthController } from "./shared/presentation/health.controller";
  * Registra todos os módulos de domínio.
  */
 @Module({
-  imports: [ServiceOrderModule],
+  imports: [IdentityAccessModule, ServiceOrderModule, OrganizationModule],
   controllers: [HealthController],
   providers: [PrismaService],
 })

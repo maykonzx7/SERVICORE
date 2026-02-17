@@ -119,11 +119,19 @@ A aplicação estará disponível em:
 
 ## 📚 Documentação
 
-- **[Quick Start](./docs/QUICK_START.md)**: Guia rápido para começar
+### 🎯 Documentos Principais
+
+- **[Plano Integrado de Desenvolvimento](./docs/INTEGRATED_DEVELOPMENT_PLAN.md)** ⭐ **NOVO**: Documento mestre que integra todos os processos
+- **[Plano de Telas e Funcionalidades](./docs/SCREEN_AND_FEATURES_PLAN.md)**: Plano completo de funcionalidades do sistema
 - **[Development Process](./DEVELOPMENT_PROCESS.md)**: Processo completo de desenvolvimento
 - **[Status](./docs/STATUS.md)**: Status atual das implementações
+
+### 📖 Documentação Técnica
+
+- **[Quick Start](./docs/QUICK_START.md)**: Guia rápido para começar
 - **[DDD Strategic](./docs/DDD_STRATEGIC.md)**: Modelagem estratégica DDD
 - **[Ubiquitous Language](./docs/UBIQUITOUS_LANGUAGE.md)**: Linguagem ubíqua do domínio
+- **[Frontend Development Guide](./docs/FRONTEND_DEVELOPMENT_GUIDE.md)**: Guia completo de desenvolvimento frontend
 - **[ADRs](./docs/ADR/)**: Architecture Decision Records
 
 ## 🧪 Testes

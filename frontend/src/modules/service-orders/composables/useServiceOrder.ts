@@ -57,6 +57,10 @@ export function useServiceOrder() {
     router.push({ name: ROUTE_NAMES.SERVICE_ORDER_CREATE })
   }
 
+  function goToOrders() {
+    router.push({ name: ROUTE_NAMES.SERVICE_ORDERS })
+  }
+
   return {
     // State
     orders,
@@ -78,6 +82,7 @@ export function useServiceOrder() {
     // Navigation
     goToDetails,
     goToCreate,
+    goToOrders,
   }
 }
 

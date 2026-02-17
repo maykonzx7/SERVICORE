@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: servicore_dev
       POSTGRES_DB: servicore_dev
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

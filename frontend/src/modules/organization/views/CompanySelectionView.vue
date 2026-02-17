@@ -12,7 +12,10 @@
       
       <div v-else-if="companies.length === 0" class="company-selection-empty">
         <p>Nenhuma empresa encontrada.</p>
-        <p>Entre em contato com o administrador.</p>
+        <p>Você pode criar sua primeira empresa agora mesmo.</p>
+        <Button @click="showCreateModal = true" variant="primary">
+          Criar Primeira Empresa
+        </Button>
       </div>
       
       <div v-else class="company-list">
@@ -29,16 +32,28 @@
           </p>
         </div>
       </div>
+
+      <!-- Modal de criação de empresa -->
+      <Modal v-model="showCreateModal" title="Criar Nova Empresa" @close="showCreateModal = false">
+        <CompanyForm
+          @submit="handleCompanyCreated"
+          @cancel="showCreateModal = false"
+        />
+      </Modal>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompanyStore } from '@/shared/stores/company.store'
+import { organizationApi } from '../api/organization.api'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
 import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
+import Modal from '@/shared/components/ui/Modal.vue'
+import Button from '@/shared/components/ui/Button.vue'
+import CompanyForm from '../components/CompanyForm.vue'
 import type { Company } from '@/shared/types/domain.types'
 import { formatCNPJ } from '@/shared/utils/formatters'
 
@@ -48,6 +63,7 @@ const companyStore = useCompanyStore()
 const companies = computed(() => companyStore.companies)
 const loading = computed(() => companyStore.loading)
 const selectedCompanyId = ref<string | null>(companyStore.companyId)
+const showCreateModal = ref(false)
 
 onMounted(async () => {
   await companyStore.loadCompanies()
@@ -57,6 +73,25 @@ onMounted(async () => {
 function selectCompany(company: Company) {
   companyStore.setCurrentCompany(company)
   router.push({ name: ROUTE_NAMES.DASHBOARD })
+}
+
+async function handleCompanyCreated(data: any) {
+  try {
+    // Criar a empresa via API
+    const response = await organizationApi.createCompany(data)
+    const newCompany = response.data
+    
+    showCreateModal.value = false
+    
+    // Recarregar lista de empresas
+    await companyStore.loadCompanies()
+    
+    // Selecionar a empresa recém-criada automaticamente
+    selectCompany(newCompany)
+  } catch (err: any) {
+    console.error('Erro ao criar empresa:', err)
+    alert(err.response?.data?.message || 'Erro ao criar empresa')
+  }
 }
 </script>
 

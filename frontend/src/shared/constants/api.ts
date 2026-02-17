@@ -20,6 +20,12 @@ export const API_ENDPOINTS = {
   // Financial
   TRANSACTIONS: '/transactions',
   TRANSACTION_BY_ID: (id: string) => `/transactions/${id}`,
+  TRANSACTION_APPROVE: (id: string) => `/transactions/${id}/approve`,
+  TRANSACTION_REJECT: (id: string) => `/transactions/${id}/reject`,
+  TRANSACTION_PROCESS: (id: string) => `/transactions/${id}/process`,
+  TRANSACTION_CANCEL: (id: string) => `/transactions/${id}/cancel`,
+  TRANSACTIONS_BALANCE: '/transactions/balance',
+  TRANSACTIONS_SUMMARY: '/transactions/summary',
 } as const
 
 export const API_TIMEOUT = 10000 // 10 segundos

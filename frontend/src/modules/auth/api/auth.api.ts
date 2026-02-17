@@ -71,6 +71,7 @@ export const authApi = {
       }
     }
     
+    // O token JWT é enviado automaticamente pelo interceptor do axios
     return apiClient.get<User>(API_ENDPOINTS.AUTH_ME)
   },
 
@@ -97,7 +98,10 @@ export const authApi = {
       }
     }
     
-    return apiClient.post<AuthResponse>('/auth/register', credentials)
+    // Remover confirmPassword antes de enviar (não é necessário no backend)
+    const { confirmPassword, ...payload } = credentials
+    
+    return apiClient.post<AuthResponse>('/auth/register', payload)
   },
 
   /**

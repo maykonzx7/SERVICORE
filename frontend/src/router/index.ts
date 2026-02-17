@@ -105,6 +105,52 @@ const routes: RouteRecordRaw[] = [
           title: 'Configurações da Empresa',
         },
       },
+      // Financial
+      {
+        path: 'transactions',
+        name: ROUTE_NAMES.TRANSACTIONS,
+        component: () => import('@/modules/financial/views/TransactionsView.vue'),
+        meta: {
+          title: 'Transações Financeiras',
+          requiresPermission: 'financial:view',
+        },
+      },
+      {
+        path: 'transactions/create',
+        name: ROUTE_NAMES.TRANSACTION_CREATE,
+        component: () => import('@/modules/financial/views/TransactionCreateView.vue'),
+        meta: {
+          title: 'Criar Transação',
+          requiresPermission: 'financial:create',
+        },
+      },
+      {
+        path: 'transactions/:id',
+        name: ROUTE_NAMES.TRANSACTION_DETAILS,
+        component: () => import('@/modules/financial/views/TransactionDetailsView.vue'),
+        meta: {
+          title: 'Detalhes da Transação',
+          requiresPermission: 'financial:view',
+        },
+      },
+      {
+        path: 'financial/dashboard',
+        name: ROUTE_NAMES.FINANCIAL_DASHBOARD,
+        component: () => import('@/modules/financial/views/FinancialDashboardView.vue'),
+        meta: {
+          title: 'Dashboard Financeiro',
+          requiresPermission: 'financial:view',
+        },
+      },
+      // Profile
+      {
+        path: 'profile',
+        name: ROUTE_NAMES.PROFILE,
+        component: () => import('@/modules/auth/views/ProfileView.vue'),
+        meta: {
+          title: 'Meu Perfil',
+        },
+      },
     ],
   },
 ]

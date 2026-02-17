@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/shared/stores/auth.store'
+import { useCompanyStore } from '@/shared/stores/company.store'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
 import type { LoginCredentials } from '../types/auth.types'
 
@@ -10,6 +11,7 @@ import type { LoginCredentials } from '../types/auth.types'
 export function useAuth() {
   const router = useRouter()
   const authStore = useAuthStore()
+  const companyStore = useCompanyStore()
 
   const isAuthenticated = computed(() => authStore.isAuthenticated)
   const user = computed(() => authStore.user)
@@ -19,9 +21,31 @@ export function useAuth() {
   async function login(credentials: LoginCredentials) {
     try {
       await authStore.login(credentials)
+      
+      // Tentar carregar empresa do localStorage
+      await companyStore.loadCurrentCompany()
+      
+      // Redirecionar baseado no estado
       const redirect = router.currentRoute.value.query.redirect as string
-      router.push({ name: redirect || ROUTE_NAMES.DASHBOARD })
-    } catch (err) {
+      
+      // Aguardar um pouco para garantir que o estado foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      if (redirect) {
+        // Se redirect for um path, usar path; se for um nome de rota, usar name
+        if (redirect.startsWith('/')) {
+          await router.push(redirect)
+        } else {
+          await router.push({ name: redirect })
+        }
+      } else if (companyStore.hasCompany) {
+        await router.push({ name: ROUTE_NAMES.DASHBOARD })
+      } else {
+        await router.push({ name: ROUTE_NAMES.COMPANY_SELECTION })
+      }
+    } catch (err: any) {
+      // Log do erro para debug
+      console.error('Erro no login:', err)
       // Erro já está no store
       throw err
     }

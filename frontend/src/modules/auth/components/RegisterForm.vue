@@ -108,10 +108,10 @@ async function handleSubmit() {
   }
 
   try {
+    // Remover confirmPassword antes de enviar (não é necessário no backend)
     await authStore.register({
       email: form.value.email,
       password: form.value.password,
-      confirmPassword: form.value.confirmPassword,
       name: form.value.name,
     })
     

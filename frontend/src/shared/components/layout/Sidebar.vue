@@ -48,7 +48,7 @@ const menuItems = computed<MenuItem[]>(() => {
       icon: '🏢',
     },
     {
-      name: ROUTE_NAMES.FINANCIAL,
+      name: ROUTE_NAMES.TRANSACTIONS,
       label: 'Financeiro',
       icon: '💰',
       permission: 'financial:view',

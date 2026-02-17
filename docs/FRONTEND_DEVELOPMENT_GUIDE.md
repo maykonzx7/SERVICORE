@@ -327,43 +327,43 @@ export const serviceOrderApi = {
 
 ### Cronograma de Desenvolvimento Integrado
 
-#### Sprint 1: Base + Identity & Access
+#### Sprint 1: Base + Identity & Access ✅ CONCLUÍDO
 
 **Backend:**
-- [ ] Fase 0: Base Compartilhada
-- [ ] Fase 1: Identity & Access (Domain → Application → Infrastructure → Presentation)
+- [x] Fase 0: Base Compartilhada
+- [x] Fase 1: Identity & Access (Domain → Application → Infrastructure → Presentation)
 
 **Frontend (em paralelo após Presentation do Backend):**
-- [ ] Fase 0: Base Compartilhada (API Client, Components Base, Router)
-- [ ] Fase 1: Identity & Access (Types → API Client → Store → Components → Views)
+- [x] Fase 0: Base Compartilhada (API Client, Components Base, Router)
+- [x] Fase 1: Identity & Access (Types → API Client → Store → Components → Views)
 
-**Resultado:** Sistema de autenticação completo funcionando
+**Resultado:** ✅ Sistema de autenticação completo funcionando
 
 ---
 
-#### Sprint 2: Organization (Multi-tenant)
+#### Sprint 2: Organization (Multi-tenant) ✅ CONCLUÍDO
 
 **Backend:**
-- [ ] Fase 2: Organization (Domain → Application → Infrastructure → Presentation)
+- [x] Fase 2: Organization (Domain → Application → Infrastructure → Presentation)
 
 **Frontend (em paralelo após Presentation do Backend):**
-- [ ] Fase 2: Organization (Types → API Client → Store → Components → Views)
-- [ ] Integração multi-tenant em todos os módulos
+- [x] Fase 2: Organization (Types → API Client → Store → Components → Views)
+- [x] Integração multi-tenant em todos os módulos
 
-**Resultado:** Multi-tenancy funcionando, usuários podem selecionar empresa
+**Resultado:** ✅ Multi-tenancy funcionando, usuários podem selecionar empresa
 
 ---
 
-#### Sprint 3: Service Order (Core)
+#### Sprint 3: Service Order (Core) ✅ CONCLUÍDO
 
 **Backend:**
-- [ ] Fase 3: Service Order (Domain → Application → Infrastructure → Presentation)
+- [x] Fase 3: Service Order (Domain → Application → Infrastructure → Presentation)
 
 **Frontend (em paralelo após Presentation do Backend):**
-- [ ] Fase 3A: Service Order (Types → API Client → Stores → Components → Views)
-- [ ] Implementação completa do módulo
+- [x] Fase 3A: Service Order (Types → API Client → Stores → Components → Views)
+- [x] Implementação completa do módulo
 
-**Resultado:** Módulo de Ordens de Serviço completo
+**Resultado:** ✅ Módulo de Ordens de Serviço completo
 
 ---
 
@@ -1622,129 +1622,151 @@ type CreateOrderForm = z.infer<typeof createOrderSchema>
 
 ## 📋 Checklist de Desenvolvimento
 
-### Fase 0: Base Compartilhada
+### Fase 0: Base Compartilhada ✅ IMPLEMENTADO
 
 **Antes de Começar:**
-- [ ] Setup inicial do projeto (Vite + Vue 3 + TypeScript)
-- [ ] Configurar estrutura de pastas base
-- [ ] Configurar ESLint e Prettier
+- [x] Setup inicial do projeto (Vite + Vue 3 + TypeScript)
+- [x] Configurar estrutura de pastas base
+- [x] Configurar ESLint e Prettier
 
 **Durante o Desenvolvimento:**
-- [ ] Criar API Client base (`shared/api/client.ts`)
-- [ ] Configurar interceptors (auth, errors)
-- [ ] Criar componentes UI base (Button, Input, Modal, Table)
-- [ ] Criar layouts base (DefaultLayout, AuthLayout, DashboardLayout)
-- [ ] Configurar Vue Router base
-- [ ] Criar stores globais base (app.store.ts)
-- [ ] Criar utilitários base (formatters, validators)
+- [x] Criar API Client base (`shared/api/client.ts`)
+- [x] Configurar interceptors (auth, errors)
+- [x] Criar componentes UI base (Button, Input, Modal, Table)
+- [x] Criar layouts base (DefaultLayout, AuthLayout, DashboardLayout)
+- [x] Configurar Vue Router base
+- [x] Criar stores globais base (app.store.ts)
+- [x] Criar utilitários base (formatters, validators)
 
 **Antes de Finalizar:**
-- [ ] Testar API Client com backend mockado
-- [ ] Verificar TypeScript (sem erros)
-- [ ] Executar linter
+- [x] Testar API Client com backend mockado
+- [x] Verificar TypeScript (sem erros)
+- [x] Executar linter
 
 ---
 
-### Fase 1: Identity & Access
+### Fase 1: Identity & Access ✅ IMPLEMENTADO
 
 **Antes de Começar:**
-- [ ] Verificar se backend tem Controllers implementados
-- [ ] Revisar DTOs do backend (LoginCredentials, User, etc.)
-- [ ] Definir estrutura de pastas do módulo auth
+- [x] Verificar se backend tem Controllers implementados
+- [x] Revisar DTOs do backend (LoginCredentials, User, etc.)
+- [x] Definir estrutura de pastas do módulo auth
 
 **Durante o Desenvolvimento:**
-- [ ] Criar tipos TypeScript (`modules/auth/types/auth.types.ts`)
-- [ ] Criar API client (`modules/auth/api/auth.api.ts`)
-- [ ] Criar store Pinia (`modules/auth/stores/auth.store.ts`)
-- [ ] Criar composable `useAuth.ts` (opcional)
-- [ ] Criar componente `LoginForm.vue`
-- [ ] Criar view `LoginView.vue`
-- [ ] Adicionar rotas no router
-- [ ] Implementar route guards (requireAuth)
-- [ ] Integrar com API Client base (interceptors de token)
+- [x] Criar tipos TypeScript (`modules/auth/types/auth.types.ts`)
+- [x] Criar API client (`modules/auth/api/auth.api.ts`)
+- [x] Criar store Pinia (`shared/stores/auth.store.ts`)
+- [x] Criar composable `useAuth.ts`
+- [x] Criar componente `LoginForm.vue`
+- [x] Criar view `LoginView.vue`
+- [x] Adicionar rotas no router
+- [x] Implementar route guards (requireAuth)
+- [x] Integrar com API Client base (interceptors de token)
+
+**Funcionalidades Adicionais:**
+- [x] Criar componente `RegisterForm.vue`
+- [x] Criar view `RegisterView.vue`
+- [x] Criar view `PasswordResetView.vue`
+- [x] Criar view `PasswordResetConfirmView.vue`
+- [x] Implementar `updateProfile()` e `changePassword()`
+- [x] Implementar verificação de roles e permissões
 
 **Antes de Finalizar:**
-- [ ] Testar login/logout completo
-- [ ] Verificar persistência de token
-- [ ] Testar route guards
-- [ ] Verificar tratamento de erros
-- [ ] Testar com diferentes roles/permissões
+- [x] Testar login/logout completo
+- [x] Verificar persistência de token
+- [x] Testar route guards
+- [x] Verificar tratamento de erros
+- [x] Testar com diferentes roles/permissões
 
 ---
 
-### Fase 2: Organization (Multi-tenant)
+### Fase 2: Organization (Multi-tenant) ✅ IMPLEMENTADO
 
 **Antes de Começar:**
-- [ ] Verificar se backend tem Controllers de Company implementados
-- [ ] Revisar DTOs do backend (Company, etc.)
-- [ ] Verificar se auth está funcionando (necessário para multi-tenant)
+- [x] Verificar se backend tem Controllers de Company implementados
+- [x] Revisar DTOs do backend (Company, etc.)
+- [x] Verificar se auth está funcionando (necessário para multi-tenant)
 
 **Durante o Desenvolvimento:**
-- [ ] Criar tipos TypeScript (`modules/organization/types/organization.types.ts`)
-- [ ] Criar API client (`modules/organization/api/organization.api.ts`)
-- [ ] Criar store global (`shared/stores/company.store.ts`) ⚠️ **Store Global**
-- [ ] Criar composable `useCompany.ts`
-- [ ] Criar componente `CompanySwitcher.vue`
-- [ ] Criar view `CompanySelectionView.vue`
-- [ ] Adicionar rotas no router
-- [ ] Implementar route guard (requireCompany)
-- [ ] Integrar seletor de empresa em layout
+- [x] Criar tipos TypeScript (`modules/organization/types/organization.types.ts`)
+- [x] Criar API client (`modules/organization/api/organization.api.ts`)
+- [x] Criar store global (`shared/stores/company.store.ts`) ⚠️ **Store Global**
+- [x] Criar composable `useCompany.ts` (integrado no store)
+- [x] Criar componente `CompanySwitcher.vue`
+- [x] Criar view `CompanySelectionView.vue`
+- [x] Adicionar rotas no router
+- [x] Implementar route guard (requireCompany)
+- [x] Integrar seletor de empresa em layout
+
+**Funcionalidades Adicionais:**
+- [x] Criar componente `CompanyForm.vue`
+- [x] Criar view `CompaniesView.vue` (listagem e criação)
+- [x] Criar view `CompanyDetailsView.vue`
+- [x] Criar view `CompanySettingsView.vue` (placeholder)
 
 **Antes de Finalizar:**
-- [ ] Testar seleção de empresa
-- [ ] Verificar persistência de empresa selecionada
-- [ ] Testar isolamento de dados por empresa
-- [ ] Verificar route guards
-- [ ] Testar troca de empresa
+- [x] Testar seleção de empresa
+- [x] Verificar persistência de empresa selecionada
+- [x] Testar isolamento de dados por empresa
+- [x] Verificar route guards
+- [x] Testar troca de empresa
 
 ---
 
-### Fase 3: Service Order (Core Domain)
+### Fase 3: Service Order (Core Domain) ✅ IMPLEMENTADO
 
 **Antes de Começar:**
-- [ ] Verificar se backend tem Controllers (Write e Read) implementados
-- [ ] Revisar DTOs do backend (CreateServiceOrderDto, ServiceOrderResponse, etc.)
-- [ ] Verificar se Organization está funcionando (necessário para companyId)
-- [ ] Definir estrutura de pastas do módulo service-orders
+- [x] Verificar se backend tem Controllers (Write e Read) implementados
+- [x] Revisar DTOs do backend (CreateServiceOrderDto, ServiceOrderResponse, etc.)
+- [x] Verificar se Organization está funcionando (necessário para companyId)
+- [x] Definir estrutura de pastas do módulo service-orders
 
 **Durante o Desenvolvimento:**
 
 **Write Side:**
-- [ ] Criar tipos TypeScript para Commands
-- [ ] Criar API client para Commands (create, update, start, complete, cancel)
-- [ ] Criar store de Commands OU adicionar ao store único
-- [ ] Criar componente `ServiceOrderForm.vue`
-- [ ] Criar componente `ServiceOrderActions.vue`
-- [ ] Criar view `ServiceOrderCreateView.vue`
+- [x] Criar tipos TypeScript para Commands
+- [x] Criar API client para Commands (create, update, start, complete, cancel)
+- [x] Criar store de Commands OU adicionar ao store único
+- [x] Criar componente `ServiceOrderForm.vue`
+- [x] Criar componente `ServiceOrderActions.vue`
+- [x] Criar view `ServiceOrderCreateView.vue`
 
 **Read Side:**
-- [ ] Criar tipos TypeScript para Queries
-- [ ] Criar API client para Queries (list, getById, search)
-- [ ] Criar store de Queries OU adicionar ao store único
-- [ ] Criar componente `ServiceOrderCard.vue`
-- [ ] Criar componente `ServiceOrderTable.vue`
-- [ ] Criar componente `ServiceOrderFilters.vue`
-- [ ] Criar view `ServiceOrdersView.vue` (lista)
-- [ ] Criar view `ServiceOrderDetailsView.vue`
+- [x] Criar tipos TypeScript para Queries
+- [x] Criar API client para Queries (list, getById, search)
+- [x] Criar store de Queries OU adicionar ao store único
+- [x] Criar componente `ServiceOrderCard.vue`
+- [x] Criar componente `ServiceOrderTable.vue`
+- [x] Criar componente `ServiceOrderFilters.vue`
+- [x] Criar view `ServiceOrdersView.vue` (lista)
+- [x] Criar view `ServiceOrderDetailsView.vue`
 
 **Integração:**
-- [ ] Adicionar rotas no router
-- [ ] Implementar validações de formulário
-- [ ] Adicionar loading states
-- [ ] Implementar tratamento de erros
-- [ ] Adicionar paginação (se necessário)
-- [ ] Adicionar filtros e busca
+- [x] Adicionar rotas no router
+- [x] Implementar validações de formulário
+- [x] Adicionar loading states
+- [x] Implementar tratamento de erros
+- [x] Adicionar paginação (se necessário)
+- [x] Adicionar filtros e busca
+
+**Composables:**
+- [x] Criar `useServiceOrder.ts` (composable principal)
+- [x] Criar `useServiceOrderForm.ts` (gerenciamento de formulário)
+- [x] Criar `useServiceOrderFilters.ts` (gerenciamento de filtros)
+
+**Views Adicionais:**
+- [x] Criar `HomeView.vue` (dashboard com estatísticas)
 
 **Antes de Finalizar:**
-- [ ] Testar criação de ordem de serviço
-- [ ] Testar listagem de ordens
-- [ ] Testar detalhes de ordem
-- [ ] Testar ações (start, complete, cancel)
-- [ ] Testar filtros e busca
-- [ ] Verificar isolamento por empresa
-- [ ] Testar com diferentes roles/permissões
-- [ ] Verificar responsividade
-- [ ] Adicionar testes unitários
+- [x] Testar criação de ordem de serviço
+- [x] Testar listagem de ordens
+- [x] Testar detalhes de ordem
+- [x] Testar ações (start, complete, cancel)
+- [x] Testar filtros e busca
+- [x] Verificar isolamento por empresa
+- [ ] Testar com diferentes roles/permissões (pendente testes manuais)
+- [x] Verificar responsividade
+- [ ] Adicionar testes unitários (pendente configuração de testes)
 
 ---
 

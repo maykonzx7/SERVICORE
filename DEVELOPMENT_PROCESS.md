@@ -2,6 +2,8 @@
 
 > Guia passo a passo do desenvolvimento do início ao fim, seguindo DDD + Hexagonal + CQRS Leve
 
+**📘 Documento Relacionado:** Para ver o mapeamento completo de funcionalidades e como implementá-las, consulte **[Plano Integrado de Desenvolvimento](./docs/INTEGRATED_DEVELOPMENT_PLAN.md)**
+
 ---
 
 # 📋 Índice

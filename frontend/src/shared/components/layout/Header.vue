@@ -10,7 +10,13 @@
       <div class="header-right">
         <CompanySwitcher v-if="hasCompany" />
         <div class="header-user">
-          <span v-if="user">{{ user.email }}</span>
+          <router-link
+            v-if="user"
+            :to="{ name: ROUTE_NAMES.PROFILE }"
+            class="header-user-link"
+          >
+            {{ user.name || user.email }}
+          </router-link>
           <Button variant="outline" size="sm" @click="handleLogout">
             Sair
           </Button>
@@ -103,6 +109,20 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.header-user-link {
+  text-decoration: none;
+  color: #374151;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.header-user-link:hover {
+  background-color: #f3f4f6;
+  color: #111827;
 }
 </style>
 

@@ -1,3 +1,10 @@
+// Carregar variáveis de ambiente
+import * as dotenv from "dotenv";
+dotenv.config();
+
+// Registrar path aliases antes de qualquer import
+import "./register-paths";
+
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";

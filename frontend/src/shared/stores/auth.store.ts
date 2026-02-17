@@ -28,17 +28,29 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await authApi.login(credentials)
-      const authData = response.data
+      // O axios retorna response.data, e o backend retorna { token, user } diretamente
+      // Se a API retornar { data: { token, user } }, usar response.data.data
+      // Se retornar { token, user } diretamente, usar response.data
+      const authData = (response.data as any)?.data || (response.data as AuthResponse)
+      
+      if (!authData || !authData.token || !authData.user) {
+        console.error('Resposta inválida do servidor:', response.data)
+        throw new Error('Resposta inválida do servidor')
+      }
+      
+      console.log('Login bem-sucedido:', { token: authData.token, userId: authData.user.id })
       
       token.value = authData.token
       user.value = authData.user
       
-      // Persistir token
+      // Persistir token (JWT agora é usado para autenticação)
       localStorage.setItem('token', authData.token)
       
       return authData
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erro ao fazer login'
+      const errorMessage = err.response?.data?.message || err.message || 'Erro ao fazer login'
+      error.value = errorMessage
+      console.error('Erro no login:', err)
       throw err
     } finally {
       loading.value = false
@@ -50,7 +62,12 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await authApi.register(credentials)
-      const authData = response.data
+      // O backend retorna { token, user } diretamente, não dentro de { data }
+      const authData = response.data?.data || response.data
+      
+      if (!authData || !authData.token) {
+        throw new Error('Resposta inválida do servidor')
+      }
       
       token.value = authData.token
       user.value = authData.user
@@ -59,7 +76,9 @@ export const useAuthStore = defineStore('auth', () => {
       
       return authData
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erro ao registrar'
+      const errorMessage = err.response?.data?.message || err.message || 'Erro ao registrar'
+      error.value = errorMessage
+      console.error('Erro no registro:', err)
       throw err
     } finally {
       loading.value = false

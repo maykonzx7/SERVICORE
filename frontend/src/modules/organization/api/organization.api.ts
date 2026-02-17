@@ -12,8 +12,12 @@ import type {
   UpdateOrganizationSettingsDto,
 } from '../types/organization.types'
 
-// Flag para usar mocks (definir em .env)
-const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
+// Flag para usar mocks (definir em .env, padrão: true em desenvolvimento)
+// Se VITE_USE_MOCKS não estiver definido, usar mocks em modo desenvolvimento
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true' || 
+  (import.meta.env.VITE_USE_MOCKS !== 'false' && import.meta.env.DEV)
+
+console.log('[MOCK] USE_MOCKS:', USE_MOCKS, 'MODE:', import.meta.env.MODE, 'DEV:', import.meta.env.DEV)
 
 export const organizationApi = {
   /**
@@ -21,24 +25,43 @@ export const organizationApi = {
    */
   listCompanies: async (): Promise<ApiResponse<Company[]>> => {
     if (USE_MOCKS) {
+      console.log('[MOCK] listCompanies - Usando mocks')
       await new Promise((resolve) => setTimeout(resolve, 300))
       
-      return {
-        data: [
-          {
-            id: 'company-1',
-            name: 'Empresa Exemplo',
-            cnpj: '12345678000190',
-            email: 'contato@empresaexemplo.com',
-            phone: '11987654321',
-            active: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ],
+      // Retornar empresa mock por padrão
+      const mockCompany: Company = {
+        id: 'company-1',
+        name: 'Empresa Exemplo',
+        cnpj: '12345678000190',
+        email: 'contato@empresaexemplo.com',
+        phone: '11987654321',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
+      
+      // Verificar se há empresas criadas no localStorage (para simular persistência)
+      const storedCompanies = localStorage.getItem('mock_companies')
+      if (storedCompanies) {
+        try {
+          const companies = JSON.parse(storedCompanies)
+          // Se há empresas salvas, retornar elas
+          if (companies.length > 0) {
+            console.log('[MOCK] Retornando empresas do localStorage:', companies.length)
+            return { data: companies }
+          }
+        } catch (e) {
+          console.warn('[MOCK] Erro ao parsear empresas do localStorage:', e)
+          // Se erro ao parsear, usar mock padrão
+        }
+      }
+      
+      // Sempre retornar pelo menos uma empresa mock
+      console.log('[MOCK] Retornando empresa mock padrão')
+      return { data: [mockCompany] }
     }
     
+    console.log('[API] listCompanies - Usando API real')
     return apiClient.get<Company[]>(API_ENDPOINTS.COMPANIES)
   },
 
@@ -71,15 +94,41 @@ export const organizationApi = {
     if (USE_MOCKS) {
       await new Promise((resolve) => setTimeout(resolve, 500))
       
-      return {
-        data: {
-          id: 'company-new',
-          ...data,
+      const newCompany: Company = {
+        id: `company-${Date.now()}`,
+        ...data,
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      
+      // Salvar no localStorage para simular persistência
+      const storedCompanies = localStorage.getItem('mock_companies')
+      let companies: Company[] = []
+      if (storedCompanies) {
+        try {
+          companies = JSON.parse(storedCompanies)
+        } catch {
+          // Se erro, começar com lista vazia
+        }
+      } else {
+        // Se não há empresas salvas, incluir a empresa mock padrão
+        companies = [{
+          id: 'company-1',
+          name: 'Empresa Exemplo',
+          cnpj: '12345678000190',
+          email: 'contato@empresaexemplo.com',
+          phone: '11987654321',
           active: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        },
+        }]
       }
+      
+      companies.push(newCompany)
+      localStorage.setItem('mock_companies', JSON.stringify(companies))
+      
+      return { data: newCompany }
     }
     
     return apiClient.post<Company>(API_ENDPOINTS.COMPANIES, data)

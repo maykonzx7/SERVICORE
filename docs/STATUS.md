@@ -46,14 +46,47 @@
 - [x] AppModule e main.ts
 
 ### Fase 7: Frontend ✅ IMPLEMENTADO
+
+#### Fase 0: Base Compartilhada ✅
 - [x] Setup inicial (Vite + Vue 3 + TypeScript)
 - [x] Estrutura de pastas (modules, shared, router)
+- [x] API Client base com interceptors
+- [x] Componentes UI base (Button, Input, Modal, Table)
+- [x] Layouts (AuthLayout, DashboardLayout)
 - [x] Vue Router configurado
 - [x] Pinia Store configurado
-- [x] API Client (service-order.api.ts)
-- [x] Service Order Store (Pinia)
-- [x] Componentes Vue (ServiceOrderForm)
-- [x] Views (Home, ServiceOrders, ServiceOrderDetails)
+- [x] Utilitários (formatters, validators, date, money)
+- [x] Route guards (requireAuth, requireCompany, requireRole, requirePermission)
+- [x] Constantes centralizadas (routes, api, enums)
+
+#### Fase 1: Identity & Access ✅
+- [x] Tipos TypeScript (`auth.types.ts`)
+- [x] API Client (`auth.api.ts`)
+- [x] Auth Store (`shared/stores/auth.store.ts`)
+- [x] Composable `useAuth.ts`
+- [x] Componentes (LoginForm, RegisterForm)
+- [x] Views (LoginView, RegisterView, PasswordResetView, PasswordResetConfirmView)
+- [x] Rotas de autenticação
+- [x] Integração com interceptors
+
+#### Fase 2: Organization (Multi-tenant) ✅
+- [x] Tipos TypeScript (`organization.types.ts`)
+- [x] API Client (`organization.api.ts`)
+- [x] Company Store (`shared/stores/company.store.ts`)
+- [x] Componentes (CompanyForm, CompanySwitcher)
+- [x] Views (CompanySelectionView, CompaniesView, CompanyDetailsView, CompanySettingsView)
+- [x] Rotas de organização
+- [x] Integração multi-tenant em todos os módulos
+
+#### Fase 3: Service Order (Core Domain) ✅
+- [x] Tipos TypeScript (`service-order.types.ts`)
+- [x] API Client (`service-order.api.ts`) com suporte a mocks
+- [x] Service Order Store (`service-order.store.ts`)
+- [x] Composables (`useServiceOrder.ts`, `useServiceOrderForm.ts`, `useServiceOrderFilters.ts`)
+- [x] Componentes (ServiceOrderForm, ServiceOrderCard, ServiceOrderTable, ServiceOrderFilters, ServiceOrderActions)
+- [x] Views (ServiceOrdersView, ServiceOrderCreateView, ServiceOrderDetailsView, HomeView)
+- [x] Rotas de service orders
+- [x] Funcionalidades completas (CRUD, ações, filtros, paginação)
 
 ### Melhorias de Workflow
 
@@ -133,6 +166,8 @@
 - ✅ `docs/IMPLEMENTATION_ROADMAP.md` - Roadmap de implementação
 - ✅ `docs/QUICK_START.md` - Guia rápido
 - ✅ `docs/FRONTEND_DEVELOPMENT_GUIDE.md` - Guia completo de desenvolvimento frontend
+- ✅ `docs/SCREEN_AND_FEATURES_PLAN.md` - Plano completo de telas e funcionalidades
+- ✅ `docs/INTEGRATED_DEVELOPMENT_PLAN.md` - **Plano integrado mestre** (combina todos os documentos)
 - ✅ `docs/STATUS.md` - Este arquivo
 - ✅ `docs/ADR/ADR-001-hexagonal-architecture.md` - ADR Arquitetura Hexagonal
 - ✅ `docs/ADR/ADR-002-cqrs-light.md` - ADR CQRS Light

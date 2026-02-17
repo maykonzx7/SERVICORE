@@ -118,7 +118,7 @@ async function handleSubmit() {
 
   loading.value = true
   try {
-    emit('submit', form.value)
+    emit('submit', form.value as CreateCompanyDto | UpdateCompanyDto)
   } catch (err: any) {
     error.value = err.message || 'Erro ao salvar empresa'
   } finally {

@@ -25,7 +25,13 @@ export const ROUTE_NAMES = {
   
   // Financial
   FINANCIAL: 'Financial',
+  FINANCIAL_DASHBOARD: 'FinancialDashboard',
   TRANSACTIONS: 'Transactions',
+  TRANSACTION_CREATE: 'TransactionCreate',
+  TRANSACTION_DETAILS: 'TransactionDetails',
+  
+  // Profile
+  PROFILE: 'Profile',
 } as const
 
 export const ROUTE_PATHS = {
@@ -43,6 +49,10 @@ export const ROUTE_PATHS = {
   COMPANY_DETAILS: '/companies/:id',
   COMPANY_SETTINGS: '/companies/:id/settings',
   FINANCIAL: '/financial',
+  FINANCIAL_DASHBOARD: '/financial/dashboard',
   TRANSACTIONS: '/transactions',
+  TRANSACTION_CREATE: '/transactions/create',
+  TRANSACTION_DETAILS: '/transactions/:id',
+  PROFILE: '/profile',
 } as const
 

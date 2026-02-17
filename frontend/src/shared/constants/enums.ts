@@ -34,6 +34,33 @@ export const PERMISSIONS = {
   
   // Financial
   FINANCIAL_VIEW: 'financial:view',
+  FINANCIAL_CREATE: 'financial:create',
+  FINANCIAL_UPDATE: 'financial:update',
+  FINANCIAL_DELETE: 'financial:delete',
   FINANCIAL_APPROVE: 'financial:approve',
+  FINANCIAL_PROCESS: 'financial:process',
 } as const
+
+export const TRANSACTION_TYPE_OPTIONS = [
+  { value: 'INCOME', label: 'Receita' },
+  { value: 'EXPENSE', label: 'Despesa' },
+] as const
+
+export const TRANSACTION_STATUS_OPTIONS = [
+  { value: 'PENDING', label: 'Pendente' },
+  { value: 'APPROVED', label: 'Aprovada' },
+  { value: 'REJECTED', label: 'Rejeitada' },
+  { value: 'PROCESSED', label: 'Processada' },
+  { value: 'CANCELLED', label: 'Cancelada' },
+] as const
+
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: 'CASH', label: 'Dinheiro' },
+  { value: 'CREDIT_CARD', label: 'Cartão de Crédito' },
+  { value: 'DEBIT_CARD', label: 'Cartão de Débito' },
+  { value: 'BANK_TRANSFER', label: 'Transferência Bancária' },
+  { value: 'PIX', label: 'PIX' },
+  { value: 'CHECK', label: 'Cheque' },
+  { value: 'OTHER', label: 'Outro' },
+] as const
 

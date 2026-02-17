@@ -5,22 +5,46 @@
         <h1 class="home-title">Bem-vindo ao ServiCore</h1>
         <p class="home-subtitle">Sistema de gestão de ordens de serviço</p>
         
-        <div class="home-stats">
-          <div class="stat-card">
-            <div class="stat-value">{{ ordersCount }}</div>
-            <div class="stat-label">Ordens de Serviço</div>
+        <div v-if="!companyStore.companyId" class="home-warning">
+          <p>⚠️ Selecione uma empresa para visualizar as estatísticas.</p>
+          <Button @click="$router.push({ name: 'CompanySelection' })">
+            Selecionar Empresa
+          </Button>
+        </div>
+
+        <div v-else>
+          <div v-if="loading" class="home-loading">
+            <p>Carregando dados...</p>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ pendingCount }}</div>
-            <div class="stat-label">Pendentes</div>
+
+          <div v-else-if="error" class="home-error">
+            <p>Erro ao carregar dados: {{ error }}</p>
+            <Button variant="outline" size="sm" @click="loadData">
+              Tentar Novamente
+            </Button>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ completedCount }}</div>
-            <div class="stat-label">Concluídas</div>
+
+          <div v-else class="home-stats">
+            <div class="stat-card">
+              <div class="stat-value">{{ ordersCount }}</div>
+              <div class="stat-label">Total de Ordens</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ pendingCount }}</div>
+              <div class="stat-label">Pendentes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ completedCount }}</div>
+              <div class="stat-label">Concluídas</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ inProgressCount }}</div>
+              <div class="stat-label">Em Progresso</div>
+            </div>
           </div>
         </div>
 
-        <div class="home-actions">
+        <div v-if="companyStore.companyId" class="home-actions">
           <Button @click="goToOrders">
             Ver Todas as Ordens
           </Button>
@@ -29,15 +53,23 @@
           </Button>
         </div>
 
-        <div v-if="recentOrders.length > 0" class="home-recent">
-          <h2 class="recent-title">Ordens Recentes</h2>
-          <div class="recent-list">
-            <ServiceOrderCard
-              v-for="order in recentOrders"
-              :key="order.id"
-              :order="order"
-              @click="goToDetails(order.id)"
-            />
+        <div v-if="companyStore.companyId && !loading && !error">
+          <div v-if="recentOrders.length > 0" class="home-recent">
+            <h2 class="recent-title">Ordens Recentes</h2>
+            <div class="recent-list">
+              <ServiceOrderCard
+                v-for="order in recentOrders"
+                :key="order.id"
+                :order="order"
+                @click="goToDetails(order.id)"
+              />
+            </div>
+          </div>
+          <div v-else class="home-empty">
+            <p>Nenhuma ordem de serviço encontrada.</p>
+            <Button @click="goToCreate">
+              Criar Primeira Ordem
+            </Button>
           </div>
         </div>
       </div>
@@ -46,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useServiceOrder } from '../composables/useServiceOrder'
 import { useCompanyStore } from '@/shared/stores/company.store'
 import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
@@ -54,31 +86,54 @@ import Button from '@/shared/components/ui/Button.vue'
 import ServiceOrderCard from '../components/ServiceOrderCard.vue'
 
 const companyStore = useCompanyStore()
-const { orders, loadOrders, goToDetails, goToCreate, goToOrders } = useServiceOrder()
+const { orders, loading, error, loadOrders, goToDetails, goToCreate, goToOrders } = useServiceOrder()
 
 const ordersCount = computed(() => orders.value.length)
 const pendingCount = computed(() => {
-  return orders.value.filter(
-    (o) => !['COMPLETED', 'CANCELLED'].includes(o.status)
-  ).length
+  return orders.value.filter((o) => o.status === 'CREATED').length
 })
 const completedCount = computed(() => {
   return orders.value.filter((o) => o.status === 'COMPLETED').length
+})
+const inProgressCount = computed(() => {
+  return orders.value.filter((o) => 
+    ['STARTED', 'IN_PROGRESS'].includes(o.status)
+  ).length
 })
 
 const recentOrders = computed(() => {
   return orders.value.slice(0, 6)
 })
 
-onMounted(async () => {
+async function loadData() {
   if (companyStore.companyId) {
-    await loadOrders(1, 10)
+    try {
+      console.log('Carregando ordens para empresa:', companyStore.companyId)
+      await loadOrders(1, 10)
+      console.log('Ordens carregadas:', orders.value.length)
+    } catch (err) {
+      console.error('Erro ao carregar ordens:', err)
+    }
+  } else {
+    console.log('Nenhuma empresa selecionada')
   }
+}
+
+onMounted(async () => {
+  // Aguardar um pouco para garantir que a empresa foi carregada
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  await loadData()
 })
 
-function goToOrders() {
-  goToOrders()
-}
+watch(
+  () => companyStore.companyId,
+  async (newCompanyId, oldCompanyId) => {
+    if (newCompanyId && newCompanyId !== oldCompanyId) {
+      await loadData()
+    }
+  },
+  { immediate: false }
+)
 </script>
 
 <style scoped>
@@ -155,6 +210,38 @@ function goToOrders() {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   gap: 1.5rem;
+}
+
+.home-warning,
+.home-loading,
+.home-error,
+.home-empty {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.home-warning {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.home-error {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.home-empty {
+  color: #6b7280;
 }
 </style>
 
