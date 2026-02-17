@@ -1,0 +1,37 @@
+{
+  "name": "servicore",
+  "version": "1.0.0",
+  "description": "Sistema de gestão de ordens de serviço com arquitetura DDD + Hexagonal + CQRS Light",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build:all": "cd backend && npm run build && cd ../frontend && npm run build",
+    "test:all": "cd backend && npm run test:all",
+    "lint:all": "cd backend && npm run lint && cd ../frontend && npm run lint",
+    "docker:up": "cd docker && docker-compose up -d",
+    "docker:down": "cd docker && docker-compose down",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^9.0.11"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/servicore.git"
+  },
+  "keywords": [
+    "ddd",
+    "hexagonal-architecture",
+    "cqrs",
+    "nestjs",
+    "vue3",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC"
+}
+

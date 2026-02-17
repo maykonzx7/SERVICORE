@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend - Lint, Build & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: servicore
+          POSTGRES_PASSWORD: servicore_dev
+          POSTGRES_DB: servicore_dev
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: ./backend
+        run: npm run prisma:generate
+        env:
+          DATABASE_URL: postgresql://servicore:servicore_dev@localhost:5432/servicore_dev?schema=public
+
+      - name: Run database migrations
+        working-directory: ./backend
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://servicore:servicore_dev@localhost:5432/servicore_dev?schema=public
+
+      - name: Run linter
+        working-directory: ./backend
+        run: npm run lint
+
+      - name: Check code formatting
+        working-directory: ./backend
+        run: npm run format:check
+
+      - name: Build
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Run unit tests
+        working-directory: ./backend
+        run: npm run test:unit
+        env:
+          DATABASE_URL: postgresql://servicore:servicore_dev@localhost:5432/servicore_dev?schema=public
+
+      - name: Run integration tests
+        working-directory: ./backend
+        run: npm run test:integration
+        env:
+          DATABASE_URL: postgresql://servicore:servicore_dev@localhost:5432/servicore_dev?schema=public
+
+      - name: Generate coverage report
+        working-directory: ./backend
+        run: npm run test:cov
+        env:
+          DATABASE_URL: postgresql://servicore:servicore_dev@localhost:5432/servicore_dev?schema=public
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+        continue-on-error: true
+
+  frontend:
+    name: Frontend - Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run linter
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: ./frontend
+        run: npm run build
+

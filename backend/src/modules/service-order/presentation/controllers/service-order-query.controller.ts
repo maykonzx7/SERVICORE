@@ -10,6 +10,13 @@ import {
   DefaultValuePipe,
   BadRequestException,
 } from "@nestjs/common";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+} from "@nestjs/swagger";
 import { ListServiceOrdersQuery } from "../../application/queries/list-service-orders.query";
 import { GetServiceOrderDetailsQuery } from "../../application/queries/get-service-order-details.query";
 import { PaginationDto } from "@shared/application/dto";
@@ -19,6 +26,7 @@ import { PaginationDto } from "@shared/application/dto";
  *
  * Controller para operações de leitura (Read Side) de ordens de serviço
  */
+@ApiTags("service-orders")
 @Controller("service-orders")
 export class ServiceOrderQueryController {
   constructor(
@@ -32,6 +40,12 @@ export class ServiceOrderQueryController {
    */
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Lista ordens de serviço com paginação" })
+  @ApiQuery({ name: "companyId", required: true, description: "ID da empresa" })
+  @ApiQuery({ name: "page", required: false, type: Number, example: 1 })
+  @ApiQuery({ name: "limit", required: false, type: Number, example: 10 })
+  @ApiResponse({ status: 200, description: "Lista de ordens de serviço" })
+  @ApiResponse({ status: 400, description: "Parâmetros inválidos" })
   async list(
     @Query("companyId") companyId: string,
     @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
@@ -55,6 +69,10 @@ export class ServiceOrderQueryController {
    */
   @Get(":id")
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Busca detalhes de uma ordem de serviço" })
+  @ApiParam({ name: "id", description: "ID da ordem de serviço" })
+  @ApiResponse({ status: 200, description: "Detalhes da ordem de serviço" })
+  @ApiResponse({ status: 404, description: "Ordem de serviço não encontrada" })
   async getDetails(@Param("id") id: string) {
     const result = await this.getDetailsQuery.execute({ id });
 

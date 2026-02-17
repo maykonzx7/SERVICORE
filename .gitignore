@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 package-lock.json
+# Mas manter node_modules da raiz se necessário para Husky
 
 # Build
 dist/
