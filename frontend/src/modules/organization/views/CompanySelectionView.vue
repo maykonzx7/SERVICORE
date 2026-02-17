@@ -1,0 +1,129 @@
+<template>
+  <DashboardLayout>
+    <div class="company-selection">
+      <h1 class="company-selection-title">Selecione uma Empresa</h1>
+      <p class="company-selection-subtitle">
+        Escolha a empresa que deseja gerenciar
+      </p>
+      
+      <div v-if="loading" class="company-selection-loading">
+        Carregando empresas...
+      </div>
+      
+      <div v-else-if="companies.length === 0" class="company-selection-empty">
+        <p>Nenhuma empresa encontrada.</p>
+        <p>Entre em contato com o administrador.</p>
+      </div>
+      
+      <div v-else class="company-list">
+        <div
+          v-for="company in companies"
+          :key="company.id"
+          class="company-card"
+          :class="{ 'company-card-selected': selectedCompanyId === company.id }"
+          @click="selectCompany(company)"
+        >
+          <h3 class="company-card-name">{{ company.name }}</h3>
+          <p v-if="company.cnpj" class="company-card-cnpj">
+            CNPJ: {{ formatCNPJ(company.cnpj) }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </DashboardLayout>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCompanyStore } from '@/shared/stores/company.store'
+import { ROUTE_NAMES } from '@/shared/constants/routes'
+import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
+import type { Company } from '@/shared/types/domain.types'
+import { formatCNPJ } from '@/shared/utils/formatters'
+
+const router = useRouter()
+const companyStore = useCompanyStore()
+
+const companies = computed(() => companyStore.companies)
+const loading = computed(() => companyStore.loading)
+const selectedCompanyId = ref<string | null>(companyStore.companyId)
+
+onMounted(async () => {
+  await companyStore.loadCompanies()
+  selectedCompanyId.value = companyStore.companyId
+})
+
+function selectCompany(company: Company) {
+  companyStore.setCurrentCompany(company)
+  router.push({ name: ROUTE_NAMES.DASHBOARD })
+}
+</script>
+
+
+<style scoped>
+.company-selection {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.company-selection-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.company-selection-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 2rem 0;
+}
+
+.company-selection-loading,
+.company-selection-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+.company-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.company-card {
+  padding: 1.5rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.company-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.company-card-selected {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.company-card-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.company-card-cnpj {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+</style>
+

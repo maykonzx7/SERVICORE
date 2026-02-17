@@ -132,6 +132,7 @@
 - ✅ `docs/WORKFLOW_IMPROVEMENTS.md` - Melhorias do workflow
 - ✅ `docs/IMPLEMENTATION_ROADMAP.md` - Roadmap de implementação
 - ✅ `docs/QUICK_START.md` - Guia rápido
+- ✅ `docs/FRONTEND_DEVELOPMENT_GUIDE.md` - Guia completo de desenvolvimento frontend
 - ✅ `docs/STATUS.md` - Este arquivo
 - ✅ `docs/ADR/ADR-001-hexagonal-architecture.md` - ADR Arquitetura Hexagonal
 - ✅ `docs/ADR/ADR-002-cqrs-light.md` - ADR CQRS Light

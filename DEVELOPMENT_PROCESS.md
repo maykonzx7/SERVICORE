@@ -1048,6 +1048,15 @@ export class ServiceOrderModule {}
 
 # 9️⃣ Fase 7: Desenvolvimento do Frontend
 
+> **📘 Guia Completo:** Para detalhes completos sobre desenvolvimento frontend, consulte [`docs/FRONTEND_DEVELOPMENT_GUIDE.md`](./docs/FRONTEND_DEVELOPMENT_GUIDE.md)
+>
+> O guia inclui:
+> - Ordem de implementação integrada com backend
+> - Estrutura completa de pastas
+> - Padrões de código detalhados
+> - Desenvolvimento com mocks
+> - Checklist completo por fase
+
 ## 9.1 Setup Inicial
 
 ```bash

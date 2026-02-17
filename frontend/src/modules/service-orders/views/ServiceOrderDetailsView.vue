@@ -1,395 +1,318 @@
 <template>
-  <div class="service-order-details">
-    <div v-if="loading" class="loading">Carregando...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else-if="!currentOrder" class="empty">Ordem de serviço não encontrada</div>
-    <div v-else class="order-details">
-      <div class="header">
-        <button @click="$router.back()" class="btn-back">← Voltar</button>
-        <h1>Ordem de Serviço #{{ currentOrder.id.slice(0, 8) }}</h1>
+  <DashboardLayout>
+    <div class="service-order-details-view">
+      <div v-if="loading" class="view-loading">
+        Carregando ordem de serviço...
       </div>
 
-      <div class="details-card">
-        <div class="detail-row">
-          <label>Status:</label>
-          <span :class="['status-badge', getStatusClass(currentOrder.status)]">
-            {{ getStatusLabel(currentOrder.status) }}
-          </span>
-        </div>
-
-        <div class="detail-row">
-          <label>Company ID:</label>
-          <span>{{ currentOrder.companyId }}</span>
-        </div>
-
-        <div class="detail-row">
-          <label>Descrição:</label>
-          <p>{{ currentOrder.description }}</p>
-        </div>
-
-        <div class="detail-row">
-          <label>Prioridade:</label>
-          <span :class="['priority', getPriorityClass(currentOrder.priority)]">
-            {{ getPriorityLabel(currentOrder.priority) }}
-          </span>
-        </div>
-
-        <div class="detail-row">
-          <label>Valor:</label>
-          <span class="value">R$ {{ formatCurrency(currentOrder.value) }}</span>
-        </div>
-
-        <div class="detail-row">
-          <label>Criada em:</label>
-          <span>{{ formatDate(currentOrder.createdAt) }}</span>
-        </div>
+      <div v-else-if="error" class="view-error">
+        {{ error }}
+        <Button variant="outline" size="sm" @click="loadOrder">
+          Tentar Novamente
+        </Button>
       </div>
 
-      <div class="actions">
-        <button
-          v-if="canStart"
-          @click="handleStart"
-          :disabled="loading"
-          class="btn-action btn-start"
-        >
-          Iniciar
-        </button>
-        <button
-          v-if="canComplete"
-          @click="handleComplete"
-          :disabled="loading"
-          class="btn-action btn-complete"
-        >
-          Finalizar
-        </button>
-        <button
-          v-if="canCancel"
-          @click="handleCancel"
-          :disabled="loading"
-          class="btn-action btn-cancel"
-        >
-          Cancelar
-        </button>
+      <div v-else-if="order" class="view-content">
+        <div class="details-header">
+          <div>
+            <h1 class="details-title">Ordem de Serviço #{{ order.id.slice(0, 8) }}</h1>
+            <p class="details-subtitle">{{ order.description }}</p>
+          </div>
+          <ServiceOrderActions
+            :order="order"
+            :loading="actionLoading"
+            @start="handleStart"
+            @complete="handleComplete"
+            @cancel="handleCancel"
+            @edit="handleEdit"
+          />
+        </div>
+
+        <div class="details-info">
+          <div class="info-section">
+            <h3>Informações</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span :class="['info-value', 'status-badge', getStatusClass(order.status)]">
+                  {{ getStatusLabel(order.status) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Prioridade:</span>
+                <span :class="['info-value', 'priority-badge', getPriorityClass(order.priority)]">
+                  {{ getPriorityLabel(order.priority) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Valor:</span>
+                <span class="info-value">{{ formatMoney(order.value) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Criado em:</span>
+                <span class="info-value">{{ formatDateTime(order.createdAt) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Atualizado em:</span>
+                <span class="info-value">{{ formatDateTime(order.updatedAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal de edição -->
+        <Modal v-model="showEditModal" title="Editar Ordem de Serviço" @close="showEditModal = false">
+          <ServiceOrderForm
+            :order="order"
+            @submit="handleUpdate"
+            @cancel="showEditModal = false"
+          />
+        </Modal>
       </div>
     </div>
-  </div>
+  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import { useServiceOrderStore } from "../stores/service-order.store";
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useServiceOrder } from '../composables/useServiceOrder'
+import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
+import Button from '@/shared/components/ui/Button.vue'
+import Modal from '@/shared/components/ui/Modal.vue'
+import ServiceOrderActions from '../components/ServiceOrderActions.vue'
+import ServiceOrderForm from '../components/ServiceOrderForm.vue'
+import { ROUTE_NAMES } from '@/shared/constants/routes'
+import { SERVICE_ORDER_STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/shared/constants/enums'
+import { formatMoney, formatDateTime } from '@/shared/utils/formatters'
 
-const route = useRoute();
-const store = useServiceOrderStore();
+const route = useRoute()
+const router = useRouter()
+const {
+  currentOrder,
+  loading,
+  error,
+  loadOrderById,
+  startOrder,
+  completeOrder,
+  cancelOrder,
+  updateOrder,
+} = useServiceOrder()
 
-const currentOrder = computed(() => store.currentOrder);
-const loading = computed(() => store.loading);
-const error = computed(() => store.error);
+const order = computed(() => currentOrder.value)
+const actionLoading = ref(false)
+const showEditModal = ref(false)
 
-const canStart = computed(() => {
-  return currentOrder.value?.status === "CREATED";
-});
+onMounted(async () => {
+  const id = route.params.id as string
+  await loadOrderById(id)
+})
 
-const canComplete = computed(() => {
-  return (
-    currentOrder.value?.status === "STARTED" ||
-    currentOrder.value?.status === "IN_PROGRESS"
-  );
-});
+async function loadOrder() {
+  const id = route.params.id as string
+  await loadOrderById(id)
+}
 
-const canCancel = computed(() => {
-  return (
-    currentOrder.value?.status === "CREATED" ||
-    currentOrder.value?.status === "STARTED"
-  );
-});
-
-const loadOrder = async () => {
-  const id = route.params.id as string;
+async function handleStart() {
+  if (!order.value) return
+  actionLoading.value = true
   try {
-    await store.loadOrderById(id);
+    await startOrder(order.value.id)
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+async function handleComplete() {
+  if (!order.value) return
+  actionLoading.value = true
+  try {
+    await completeOrder(order.value.id)
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+async function handleCancel() {
+  if (!order.value) return
+  actionLoading.value = true
+  try {
+    await cancelOrder(order.value.id)
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+async function handleUpdate() {
+  if (!order.value) return
+  try {
+    await loadOrder()
+    showEditModal.value = false
   } catch (err) {
     // Erro já está no store
   }
-};
+}
 
-const handleStart = async () => {
-  if (!currentOrder.value) return;
-  try {
-    await store.startOrder(currentOrder.value.id);
-  } catch (err) {
-    // Erro já está no store
-  }
-};
+function handleEdit() {
+  showEditModal.value = true
+}
 
-const handleComplete = async () => {
-  if (!currentOrder.value) return;
-  try {
-    await store.completeOrder(currentOrder.value.id);
-  } catch (err) {
-    // Erro já está no store
-  }
-};
+function getStatusLabel(status: string): string {
+  const option = SERVICE_ORDER_STATUS_OPTIONS.find((opt) => opt.value === status)
+  return option?.label || status
+}
 
-const handleCancel = async () => {
-  if (!currentOrder.value) return;
-  if (confirm("Tem certeza que deseja cancelar esta ordem de serviço?")) {
-    try {
-      await store.cancelOrder(currentOrder.value.id);
-    } catch (err) {
-      // Erro já está no store
-    }
-  }
-};
+function getStatusClass(status: string): string {
+  return `status-${status.toLowerCase().replace('_', '-')}`
+}
 
-const getStatusLabel = (status: string): string => {
-  const labels: Record<string, string> = {
-    CREATED: "Criada",
-    STARTED: "Iniciada",
-    IN_PROGRESS: "Em Progresso",
-    COMPLETED: "Concluída",
-    CANCELLED: "Cancelada",
-  };
-  return labels[status] || status;
-};
+function getPriorityLabel(priority: string): string {
+  const option = PRIORITY_OPTIONS.find((opt) => opt.value === priority)
+  return option?.label || priority
+}
 
-const getStatusClass = (status: string): string => {
-  const classes: Record<string, string> = {
-    CREATED: "status-created",
-    STARTED: "status-started",
-    IN_PROGRESS: "status-in-progress",
-    COMPLETED: "status-completed",
-    CANCELLED: "status-cancelled",
-  };
-  return classes[status] || "";
-};
-
-const getPriorityLabel = (priority: string): string => {
-  const labels: Record<string, string> = {
-    LOW: "Baixa",
-    MEDIUM: "Média",
-    HIGH: "Alta",
-    CRITICAL: "Crítica",
-  };
-  return labels[priority] || priority;
-};
-
-const getPriorityClass = (priority: string): string => {
-  return `priority-${priority.toLowerCase()}`;
-};
-
-const formatCurrency = (value: number): string => {
-  return value.toFixed(2).replace(".", ",");
-};
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
-onMounted(() => {
-  loadOrder();
-});
+function getPriorityClass(priority: string): string {
+  return `priority-${priority.toLowerCase()}`
+}
 </script>
 
 <style scoped>
-.service-order-details {
-  max-width: 800px;
+.service-order-details-view {
+  max-width: 64rem;
   margin: 0 auto;
-  padding: 20px;
 }
 
-.loading,
-.empty,
-.error {
+.view-loading {
   text-align: center;
-  padding: 40px;
-  color: #7f8c8d;
+  padding: 3rem;
+  color: #6b7280;
 }
 
-.error {
-  color: #dc3545;
-  background-color: #f8d7da;
-  border-radius: 4px;
-  padding: 15px;
-}
-
-.header {
+.view-error {
+  padding: 1rem;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  color: #991b1b;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
 }
 
-.btn-back {
-  padding: 8px 16px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.header h1 {
-  margin: 0;
-  color: #2c3e50;
-}
-
-.details-card {
+.view-content {
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 30px;
-  margin-bottom: 30px;
+  border-radius: 0.5rem;
+  padding: 2rem;
 }
 
-.detail-row {
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.details-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.details-subtitle {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.details-info {
+  margin-top: 1.5rem;
+}
+
+.info-section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  gap: 0.25rem;
 }
 
-.detail-row:last-child {
-  margin-bottom: 0;
+.info-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
 }
 
-.detail-row label {
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 5px;
+.info-value {
+  font-size: 1rem;
+  color: #111827;
 }
 
-.detail-row span,
-.detail-row p {
-  color: #333;
-}
-
-.detail-row p {
-  margin: 0;
-  line-height: 1.6;
-}
-
-.status-badge {
+.status-badge,
+.priority-badge {
   display: inline-block;
-  padding: 6px 16px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  width: fit-content;
 }
 
 .status-created {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
 .status-started {
-  background-color: #fff3e0;
-  color: #f57c00;
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
 .status-in-progress {
-  background-color: #e1f5fe;
-  color: #0277bd;
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
 .status-completed {
-  background-color: #e8f5e9;
-  color: #388e3c;
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
 .status-cancelled {
-  background-color: #ffebee;
-  color: #c62828;
-}
-
-.priority {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .priority-low {
-  background-color: #e8f5e9;
-  color: #388e3c;
+  background-color: #d1fae5;
+  color: #065f46;
 }
 
 .priority-medium {
-  background-color: #fff3e0;
-  color: #f57c00;
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
 .priority-high {
-  background-color: #ffebee;
-  color: #c62828;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .priority-critical {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
-}
-
-.value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.btn-action {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: opacity 0.3s;
-}
-
-.btn-action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-start {
-  background-color: #42b983;
-  color: white;
-}
-
-.btn-start:hover:not(:disabled) {
-  background-color: #35a372;
-}
-
-.btn-complete {
-  background-color: #2196f3;
-  color: white;
-}
-
-.btn-complete:hover:not(:disabled) {
-  background-color: #1976d2;
-}
-
-.btn-cancel {
-  background-color: #f44336;
-  color: white;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background-color: #d32f2f;
+  background-color: #f3e8ff;
+  color: #6b21a8;
 }
 </style>
-

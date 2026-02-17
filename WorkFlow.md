@@ -812,6 +812,8 @@ Sprint 6 — Eventos + Mensageria
 Sprint 7 — Dashboard + KPIs
 Sprint 8 — Hardening + Deploy
 
+> **📘 Guia Frontend:** Para detalhes sobre desenvolvimento frontend integrado, consulte [`docs/FRONTEND_DEVELOPMENT_GUIDE.md`](./docs/FRONTEND_DEVELOPMENT_GUIDE.md)
+
 ---
 
 # Status Arquitetural Atual
