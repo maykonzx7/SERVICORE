@@ -30,6 +30,17 @@ export interface UserRepository {
   findByEmail(email: Email): Promise<User | null>;
 
   /**
+   * Lista usuários com paginação e filtros
+   */
+  findMany(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    role?: string;
+    active?: boolean;
+  }): Promise<{ users: User[]; total: number }>;
+
+  /**
    * Verifica se um email já está em uso
    * @param email Email a ser verificado
    * @returns true se o email já estiver em uso

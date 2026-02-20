@@ -21,7 +21,7 @@
         </tr>
         <tr v-else v-for="(item, index) in items" :key="getItemKey(item, index)" @click="$emit('rowClick', item)">
           <td v-for="header in headers" :key="header.key" :class="header.class">
-            <slot :name="`cell-${header.key}`" :item="item" :value="item[header.key]">
+            <slot :name="`cell-${header.key}`" :item="item" :row="item" :value="item[header.key]">
               {{ formatValue(item[header.key], header.format) }}
             </slot>
           </td>

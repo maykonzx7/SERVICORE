@@ -12,6 +12,7 @@ import { PrismaServiceOrderRepository } from "./infrastructure/persistence/prism
 import { PrismaServiceOrderQueryService } from "./infrastructure/persistence/prisma-service-order.query.service";
 import { ServiceOrderRepository } from "./domain/repositories/service-order.repository";
 import { ServiceOrderQueryServiceInterface } from "./application/queries/service-order-query.service.interface";
+import { FinancialModule } from "../financial/financial.module";
 
 /**
  * ServiceOrderModule
@@ -20,6 +21,7 @@ import { ServiceOrderQueryServiceInterface } from "./application/queries/service
  * Configura todas as dependências e injeções.
  */
 @Module({
+  imports: [FinancialModule],
   controllers: [ServiceOrderController, ServiceOrderQueryController],
   providers: [
     // Infrastructure
@@ -35,10 +37,16 @@ import { ServiceOrderQueryServiceInterface } from "./application/queries/service
     // Use Cases (Write Side)
     {
       provide: CreateServiceOrderUseCase,
-      useFactory: (repository: ServiceOrderRepository) => {
-        return new CreateServiceOrderUseCase(repository);
+      useFactory: (
+        repository: ServiceOrderRepository,
+        handler?: any
+      ) => {
+        return new CreateServiceOrderUseCase(repository, handler);
       },
-      inject: ["ServiceOrderRepository"],
+      inject: [
+        "ServiceOrderRepository",
+        { token: "ServiceOrderCreatedHandler", optional: true },
+      ],
     },
     {
       provide: StartServiceOrderUseCase,

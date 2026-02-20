@@ -9,6 +9,16 @@ export interface ServiceOrder {
   status: ServiceOrderStatus
   createdAt: string
   updatedAt: string
+  // Atribuições (técnicos, clientes, etc)
+  assignments?: Assignment[]
+  // Cliente (se aplicável)
+  clientId?: string
+  client?: {
+    id: string
+    name: string
+    email?: string
+    phone?: string
+  }
 }
 
 export interface CreateServiceOrderDto {
@@ -43,13 +53,27 @@ export type ServiceOrderStatus =
   | 'CANCELLED'
   | 'REJECTED'
 
+export interface Assignment {
+  id: string
+  userId: string
+  userName: string
+  userEmail?: string
+  type: AssignmentType
+  assignedAt: string
+  assignedBy?: string
+}
+
+export type AssignmentType = 'PRIMARY' | 'AUXILIARY' | 'OBSERVER'
+
 export interface ServiceOrderHistory {
   id: string
   serviceOrderId: string
   action: string
   performedBy: string
+  performedByName?: string
   performedAt: string
   changes?: Record<string, { from: any; to: any }>
+  description?: string
 }
 
 

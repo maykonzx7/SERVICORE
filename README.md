@@ -129,6 +129,8 @@ A aplicação estará disponível em:
 ### 📖 Documentação Técnica
 
 - **[Quick Start](./docs/QUICK_START.md)**: Guia rápido para começar
+- **[Ngrok Setup](./docs/NGROK_SETUP.md)**: Configuração do ngrok para desenvolvimento
+- **[Recomendações](./docs/RECOMMENDATIONS.md)**: Recomendações estratégicas de desenvolvimento
 - **[DDD Strategic](./docs/DDD_STRATEGIC.md)**: Modelagem estratégica DDD
 - **[Ubiquitous Language](./docs/UBIQUITOUS_LANGUAGE.md)**: Linguagem ubíqua do domínio
 - **[Frontend Development Guide](./docs/FRONTEND_DEVELOPMENT_GUIDE.md)**: Guia completo de desenvolvimento frontend

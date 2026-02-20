@@ -47,14 +47,34 @@ export const useCompanyStore = defineStore('company', () => {
     error.value = null
     try {
       const response = await organizationApi.listCompanies()
-      companies.value = response.data
+      // Garantir que sempre seja um array
+      const companiesData = response.data
+      companies.value = Array.isArray(companiesData) ? companiesData : []
       
-      // Se não há empresa selecionada e há empresas disponíveis, selecionar a primeira
-      if (!currentCompany.value && companies.value.length > 0) {
+      // Se o usuário tem apenas uma empresa, selecionar automaticamente
+      if (companies.value.length === 1 && !currentCompany.value) {
         setCurrentCompany(companies.value[0])
+      }
+      
+      // Se já tem empresa selecionada, verificar se ainda existe na lista
+      if (currentCompany.value && companies.value.length > 0) {
+        const companyStillExists = companies.value.some(
+          (c) => c.id === currentCompany.value?.id
+        )
+        if (!companyStillExists) {
+          // Empresa selecionada não existe mais
+          // Se houver apenas uma empresa disponível, selecionar ela
+          if (companies.value.length === 1) {
+            setCurrentCompany(companies.value[0])
+          } else {
+            // Múltiplas empresas, limpar seleção para o usuário escolher
+            clearCompany()
+          }
+        }
       }
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Erro ao carregar empresas'
+      companies.value = [] // Garantir que seja array vazio em caso de erro
       throw err
     } finally {
       loading.value = false

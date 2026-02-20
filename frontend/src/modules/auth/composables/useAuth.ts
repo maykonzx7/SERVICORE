@@ -22,8 +22,8 @@ export function useAuth() {
     try {
       await authStore.login(credentials)
       
-      // Tentar carregar empresa do localStorage
-      await companyStore.loadCurrentCompany()
+      // Carregar empresas do usuário
+      await companyStore.loadCompanies()
       
       // Redirecionar baseado no estado
       const redirect = router.currentRoute.value.query.redirect as string
@@ -39,8 +39,17 @@ export function useAuth() {
           await router.push({ name: redirect })
         }
       } else if (companyStore.hasCompany) {
+        // Usuário tem empresa (selecionada automaticamente ou do localStorage)
+        await router.push({ name: ROUTE_NAMES.DASHBOARD })
+      } else if (companyStore.companies.length === 0) {
+        // Usuário não tem empresa, redirecionar para setup
+        await router.push({ name: ROUTE_NAMES.COMPANY_SETUP })
+      } else if (companyStore.companies.length === 1) {
+        // Usuário tem apenas uma empresa, selecionar automaticamente
+        companyStore.setCurrentCompany(companyStore.companies[0])
         await router.push({ name: ROUTE_NAMES.DASHBOARD })
       } else {
+        // Usuário tem múltiplas empresas, mostrar seleção
         await router.push({ name: ROUTE_NAMES.COMPANY_SELECTION })
       }
     } catch (err: any) {

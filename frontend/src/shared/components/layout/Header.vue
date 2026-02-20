@@ -9,6 +9,7 @@
       </div>
       <div class="header-right">
         <CompanySwitcher v-if="hasCompany" />
+        <NotificationWidget v-if="hasCompany" />
         <div class="header-user">
           <router-link
             v-if="user"
@@ -35,6 +36,7 @@ import { useAppStore } from '@/shared/stores/app.store'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
 import Button from '@/shared/components/ui/Button.vue'
 import CompanySwitcher from '@/modules/organization/components/CompanySwitcher.vue'
+import NotificationWidget from '@/modules/notifications/components/NotificationWidget.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

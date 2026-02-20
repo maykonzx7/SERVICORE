@@ -66,6 +66,24 @@ npm run start:dev
 # Backend deve estar rodando em http://localhost:3000
 ```
 
+### 6. Expor com Ngrok (Opcional)
+
+Para testar webhooks ou permitir acesso remoto:
+
+```bash
+# Instalar ngrok (se ainda não tiver)
+# macOS: brew install ngrok/ngrok/ngrok
+# Linux: sudo snap install ngrok
+
+# Expor backend
+ngrok http 3000
+
+# Expor frontend (em outro terminal)
+ngrok http 5173
+```
+
+**📘 Guia Completo:** Consulte [`docs/NGROK_SETUP.md`](./NGROK_SETUP.md) para mais detalhes.
+
 ---
 
 ## 📁 Estrutura do Projeto
@@ -204,6 +222,7 @@ npm run test:cov
 
 - **Processo de Desenvolvimento:** [`DEVELOPMENT_PROCESS.md`](../DEVELOPMENT_PROCESS.md)
 - **Workflow:** [`WorkFlow.md`](../WorkFlow.md)
+- **Ngrok Setup:** [`docs/NGROK_SETUP.md`](./NGROK_SETUP.md) - Expor sistema localmente
 - **DDD Estratégico:** [`docs/DDD_STRATEGIC.md`](./DDD_STRATEGIC.md)
 - **Linguagem Ubíqua:** [`docs/UBIQUITOUS_LANGUAGE.md`](./UBIQUITOUS_LANGUAGE.md)
 - **Aggregates:** [`docs/AGGREGATES.md`](./AGGREGATES.md)

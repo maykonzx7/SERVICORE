@@ -3,7 +3,7 @@
     <div class="company-selection">
       <h1 class="company-selection-title">Selecione uma Empresa</h1>
       <p class="company-selection-subtitle">
-        Escolha a empresa que deseja gerenciar
+        Você tem acesso a múltiplas empresas. Escolha qual deseja gerenciar agora.
       </p>
       
       <div v-if="loading" class="company-selection-loading">
@@ -18,18 +18,26 @@
         </Button>
       </div>
       
-      <div v-else class="company-list">
-        <div
-          v-for="company in companies"
-          :key="company.id"
-          class="company-card"
-          :class="{ 'company-card-selected': selectedCompanyId === company.id }"
-          @click="selectCompany(company)"
-        >
-          <h3 class="company-card-name">{{ company.name }}</h3>
-          <p v-if="company.cnpj" class="company-card-cnpj">
-            CNPJ: {{ formatCNPJ(company.cnpj) }}
-          </p>
+      <div v-else class="company-list-container">
+        <div class="company-list-header">
+          <h2>Suas Empresas</h2>
+          <Button @click="showCreateModal = true" variant="primary">
+            + Nova Empresa
+          </Button>
+        </div>
+        <div class="company-list">
+          <div
+            v-for="company in companies"
+            :key="company.id"
+            class="company-card"
+            :class="{ 'company-card-selected': selectedCompanyId === company.id }"
+            @click="selectCompany(company)"
+          >
+            <h3 class="company-card-name">{{ company.name }}</h3>
+            <p v-if="company.cnpj" class="company-card-cnpj">
+              CNPJ: {{ formatCNPJ(company.cnpj) }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -77,9 +85,15 @@ function selectCompany(company: Company) {
 
 async function handleCompanyCreated(data: any) {
   try {
+    console.log('Criando empresa com dados:', data)
     // Criar a empresa via API
     const response = await organizationApi.createCompany(data)
+    console.log('Empresa criada com sucesso:', response)
     const newCompany = response.data
+    
+    if (!newCompany) {
+      throw new Error('Resposta da API não contém dados da empresa')
+    }
     
     showCreateModal.value = false
     
@@ -90,7 +104,11 @@ async function handleCompanyCreated(data: any) {
     selectCompany(newCompany)
   } catch (err: any) {
     console.error('Erro ao criar empresa:', err)
-    alert(err.response?.data?.message || 'Erro ao criar empresa')
+    const errorMessage = err.response?.data?.message 
+      || err.response?.data?.error 
+      || err.message 
+      || 'Erro ao criar empresa. Verifique os dados e tente novamente.'
+    alert(errorMessage)
   }
 }
 </script>
@@ -121,6 +139,25 @@ async function handleCompanyCreated(data: any) {
   text-align: center;
   padding: 3rem;
   color: #6b7280;
+}
+
+.company-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.company-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.company-list-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
 }
 
 .company-list {

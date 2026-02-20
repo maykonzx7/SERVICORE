@@ -101,7 +101,7 @@ export const authApi = {
     // Remover confirmPassword antes de enviar (não é necessário no backend)
     const { confirmPassword, ...payload } = credentials
     
-    return apiClient.post<AuthResponse>('/auth/register', payload)
+    return apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH_REGISTER, payload)
   },
 
   /**

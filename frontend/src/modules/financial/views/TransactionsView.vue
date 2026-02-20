@@ -1,6 +1,5 @@
 <template>
-  <DashboardLayout>
-    <div class="transactions-view">
+  <div class="transactions-view">
       <div class="view-header">
         <h1 class="view-title">Transações Financeiras</h1>
         <Button @click="goToCreate">
@@ -16,7 +15,7 @@
 
       <div v-else-if="error" class="view-error">
         {{ error }}
-        <Button variant="outline" size="sm" @click="loadTransactions">
+        <Button variant="outline" size="sm" @click="handleRetry">
           Tentar Novamente
         </Button>
       </div>
@@ -86,14 +85,12 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useCompanyStore } from '@/shared/stores/company.store'
 import { useFinancial } from '../composables/useFinancial'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import TransactionCard from '../components/TransactionCard.vue'
 import TransactionTable from '../components/TransactionTable.vue'
@@ -155,6 +152,10 @@ async function changePage(page: number) {
       await loadTransactions(page)
     }
   }
+}
+
+async function handleRetry() {
+  await loadTransactions()
 }
 </script>
 

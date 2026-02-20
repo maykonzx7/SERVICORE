@@ -2,7 +2,7 @@
   <AuthLayout>
     <div class="register-view">
       <h2 class="register-title">Criar Conta</h2>
-      <p class="register-subtitle">Preencha os dados para criar sua conta</p>
+      <p class="register-subtitle">Preencha os dados para começar a usar o ServiCore</p>
       <RegisterForm />
       <div class="register-footer">
         <p class="register-footer-text">

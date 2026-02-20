@@ -15,10 +15,21 @@
         {{ getStatusLabel(value) }}
       </span>
     </template>
-    <template #cell-amount="{ value, row }">
-      <span :class="['amount', getTypeClass(row.type)]">
-        {{ row.type === 'INCOME' ? '+' : '-' }}{{ formatMoney(value) }}
+    <template #cell-amount="{ value, item }">
+      <span :class="['amount', getTypeClass(item.type)]">
+        {{ item.type === 'INCOME' ? '+' : '-' }}{{ formatMoney(value) }}
       </span>
+    </template>
+    <template #cell-serviceOrderId="{ value }">
+      <a
+        v-if="value"
+        :href="`/service-orders/${value}`"
+        class="service-order-link"
+        @click.stop.prevent="goToServiceOrder(value)"
+      >
+        #{{ value.slice(0, 8) }}
+      </a>
+      <span v-else class="text-muted">-</span>
     </template>
     <template #cell-paymentMethod="{ value }">
       {{ value ? getPaymentMethodLabel(value) : '-' }}
@@ -30,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import Table from '@/shared/components/ui/Table.vue'
 import type { Transaction } from '../types/financial.types'
 import {
@@ -38,6 +50,8 @@ import {
   PAYMENT_METHOD_OPTIONS,
 } from '@/shared/constants/enums'
 import { formatMoney, formatDate } from '@/shared/utils/formatters'
+
+const router = useRouter()
 
 interface Props {
   transactions: Transaction[]
@@ -58,12 +72,17 @@ const headers = [
   { key: 'type', label: 'Tipo', class: 'w-32' },
   { key: 'status', label: 'Status', class: 'w-32' },
   { key: 'amount', label: 'Valor', class: 'w-32', format: 'money' },
+  { key: 'serviceOrderId', label: 'Ordem de Serviço', class: 'w-40' },
   { key: 'paymentMethod', label: 'Método', class: 'w-32' },
   { key: 'createdAt', label: 'Criado em', class: 'w-40', format: 'date' },
 ]
 
 function handleRowClick(transaction: Transaction) {
   emit('rowClick', transaction)
+}
+
+function goToServiceOrder(id: string) {
+  router.push(`/service-orders/${id}`)
 }
 
 function getTypeLabel(type: string): string {
@@ -145,6 +164,22 @@ function getPaymentMethodLabel(method: string): string {
 
 .amount.type-expense {
   color: #991b1b;
+}
+
+.service-order-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.service-order-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.text-muted {
+  color: #6b7280;
 }
 </style>
 

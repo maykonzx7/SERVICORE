@@ -15,7 +15,7 @@
         <span class="card-value">{{ formatMoney(order.value) }}</span>
       </div>
     </div>
-    <div class="card-footer">
+    <div v-if="order.createdAt" class="card-footer">
       <small>{{ formatRelativeTime(order.createdAt) }}</small>
     </div>
   </div>
@@ -37,21 +37,25 @@ defineEmits<{
   click: [order: ServiceOrder]
 }>()
 
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string | undefined): string {
+  if (!status) return 'N/A'
   const option = SERVICE_ORDER_STATUS_OPTIONS.find((opt) => opt.value === status)
   return option?.label || status
 }
 
-function getStatusClass(status: string): string {
+function getStatusClass(status: string | undefined): string {
+  if (!status) return 'status-unknown'
   return `status-${status.toLowerCase().replace('_', '-')}`
 }
 
-function getPriorityLabel(priority: string): string {
+function getPriorityLabel(priority: string | undefined): string {
+  if (!priority) return 'N/A'
   const option = PRIORITY_OPTIONS.find((opt) => opt.value === priority)
   return option?.label || priority
 }
 
-function getPriorityClass(priority: string): string {
+function getPriorityClass(priority: string | undefined): string {
+  if (!priority) return 'priority-unknown'
   return `priority-${priority.toLowerCase()}`
 }
 </script>
@@ -127,6 +131,11 @@ function getPriorityClass(priority: string): string {
   color: #991b1b;
 }
 
+.status-unknown {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
 .card-body {
   margin-bottom: 0.75rem;
 }
@@ -169,6 +178,11 @@ function getPriorityClass(priority: string): string {
 .priority-critical {
   background-color: #f3e8ff;
   color: #6b21a8;
+}
+
+.priority-unknown {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
 .card-value {

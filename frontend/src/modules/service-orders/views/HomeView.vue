@@ -1,45 +1,84 @@
 <template>
-  <DashboardLayout>
-    <div class="home-view">
+  <div class="home-view">
       <div class="home-content">
         <h1 class="home-title">Bem-vindo ao ServiCore</h1>
         <p class="home-subtitle">Sistema de gestão de ordens de serviço</p>
         
         <div v-if="!companyStore.companyId" class="home-warning">
-          <p>⚠️ Selecione uma empresa para visualizar as estatísticas.</p>
-          <Button @click="$router.push({ name: 'CompanySelection' })">
-            Selecionar Empresa
-          </Button>
+          <EmptyState
+            icon="🏢"
+            title="Nenhuma empresa selecionada"
+            description="Selecione uma empresa para visualizar as estatísticas"
+          >
+            <template #actions>
+              <Button @click="$router.push({ name: 'CompanySelection' })">
+                Selecionar Empresa
+              </Button>
+            </template>
+          </EmptyState>
         </div>
 
         <div v-else>
           <div v-if="loading" class="home-loading">
-            <p>Carregando dados...</p>
+            <Loading message="Carregando dados do dashboard..." />
           </div>
 
           <div v-else-if="error" class="home-error">
-            <p>Erro ao carregar dados: {{ error }}</p>
-            <Button variant="outline" size="sm" @click="loadData">
-              Tentar Novamente
-            </Button>
+            <Card>
+              <div class="error-content">
+                <p class="error-message">Erro ao carregar dados: {{ error }}</p>
+                <Button variant="outline" size="sm" @click="loadData">
+                  Tentar Novamente
+                </Button>
+              </div>
+            </Card>
           </div>
 
-          <div v-else class="home-stats">
-            <div class="stat-card">
-              <div class="stat-value">{{ ordersCount }}</div>
-              <div class="stat-label">Total de Ordens</div>
+          <div v-else class="dashboard-grid">
+            <div class="dashboard-kpis">
+              <KPIWidget
+                title="Total de Ordens"
+                :value="ordersCount"
+                icon="📋"
+                variant="primary"
+              />
+              <KPIWidget
+                title="Pendentes"
+                :value="pendingCount"
+                icon="⏳"
+                variant="warning"
+              />
+              <KPIWidget
+                title="Em Progresso"
+                :value="inProgressCount"
+                icon="🔄"
+                variant="info"
+              />
+              <KPIWidget
+                title="Concluídas"
+                :value="completedCount"
+                icon="✅"
+                variant="success"
+              />
             </div>
-            <div class="stat-card">
-              <div class="stat-value">{{ pendingCount }}</div>
-              <div class="stat-label">Pendentes</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">{{ completedCount }}</div>
-              <div class="stat-label">Concluídas</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">{{ inProgressCount }}</div>
-              <div class="stat-label">Em Progresso</div>
+
+            <div class="dashboard-widgets">
+              <ChartWidget
+                title="Ordens por Status"
+                subtitle="Últimos 30 dias"
+                :loading="loading"
+              >
+                <div class="chart-placeholder-content">
+                  <p>Gráfico de pizza será implementado aqui</p>
+                </div>
+              </ChartWidget>
+
+              <ActivityWidget
+                title="Atividades Recentes"
+                :activities="recentActivities"
+                :loading="loading"
+                :view-all-link="{ name: ROUTE_NAMES.SERVICE_ORDERS }"
+              />
             </div>
           </div>
         </div>
@@ -66,24 +105,36 @@
             </div>
           </div>
           <div v-else class="home-empty">
-            <p>Nenhuma ordem de serviço encontrada.</p>
-            <Button @click="goToCreate">
-              Criar Primeira Ordem
-            </Button>
+            <EmptyState
+              icon="📋"
+              title="Nenhuma ordem de serviço encontrada"
+              description="Comece criando sua primeira ordem de serviço"
+            >
+              <template #actions>
+                <Button @click="goToCreate">
+                  Criar Primeira Ordem
+                </Button>
+              </template>
+            </EmptyState>
           </div>
         </div>
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useServiceOrder } from '../composables/useServiceOrder'
 import { useCompanyStore } from '@/shared/stores/company.store'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
+import { ROUTE_NAMES } from '@/shared/constants/routes'
 import Button from '@/shared/components/ui/Button.vue'
+import Card from '@/shared/components/ui/Card.vue'
+import Loading from '@/shared/components/ui/Loading.vue'
+import EmptyState from '@/shared/components/ui/EmptyState.vue'
 import ServiceOrderCard from '../components/ServiceOrderCard.vue'
+import KPIWidget from '@/shared/components/dashboard/KPIWidget.vue'
+import ChartWidget from '@/shared/components/dashboard/ChartWidget.vue'
+import ActivityWidget from '@/shared/components/dashboard/ActivityWidget.vue'
 
 const companyStore = useCompanyStore()
 const { orders, loading, error, loadOrders, goToDetails, goToCreate, goToOrders } = useServiceOrder()
@@ -105,24 +156,40 @@ const recentOrders = computed(() => {
   return orders.value.slice(0, 6)
 })
 
+const recentActivities = computed(() => {
+  return orders.value.slice(0, 5).map((order) => ({
+    id: order.id,
+    type: 'service-order' as const,
+    text: `Ordem #${order.number} - ${order.title || 'Sem título'}`,
+    time: order.createdAt,
+    link: { name: ROUTE_NAMES.SERVICE_ORDER_DETAILS, params: { id: order.id } },
+  }))
+})
+
 async function loadData() {
-  if (companyStore.companyId) {
-    try {
-      console.log('Carregando ordens para empresa:', companyStore.companyId)
-      await loadOrders(1, 10)
-      console.log('Ordens carregadas:', orders.value.length)
-    } catch (err) {
-      console.error('Erro ao carregar ordens:', err)
-    }
-  } else {
-    console.log('Nenhuma empresa selecionada')
+  if (!companyStore.companyId) {
+    return
+  }
+  
+  try {
+    await loadOrders(1, 20) // Carregar mais ordens para o dashboard
+  } catch (err: any) {
+    console.error('Erro ao carregar ordens:', err)
   }
 }
 
 onMounted(async () => {
+  // Se não tem empresa, tentar carregar do localStorage
+  if (!companyStore.companyId && !companyStore.currentCompany) {
+    await companyStore.loadCurrentCompany()
+  }
+  
   // Aguardar um pouco para garantir que a empresa foi carregada
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  await loadData()
+  await new Promise((resolve) => setTimeout(resolve, 200))
+  
+  if (companyStore.companyId) {
+    await loadData()
+  }
 })
 
 watch(
@@ -143,7 +210,7 @@ watch(
 }
 
 .home-content {
-  padding: 2rem;
+  padding: 0;
 }
 
 .home-title {
@@ -161,31 +228,30 @@ watch(
   text-align: center;
 }
 
-.home-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 1.5rem;
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   margin-bottom: 3rem;
 }
 
-.stat-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1.5rem;
+}
+
+.dashboard-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1.5rem;
+}
+
+.chart-placeholder-content {
+  padding: 2rem;
   text-align: center;
-}
-
-.stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #3b82f6;
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
+  color: #9ca3af;
   font-size: 0.875rem;
-  color: #6b7280;
 }
 
 .home-actions {
@@ -212,36 +278,36 @@ watch(
   gap: 1.5rem;
 }
 
-.home-warning,
-.home-loading,
-.home-error,
-.home-empty {
-  text-align: center;
+.home-warning {
   padding: 2rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
   margin-bottom: 2rem;
 }
 
-.home-warning {
-  background: #fef3c7;
-  border-color: #fde68a;
-  color: #92400e;
+.home-loading {
+  padding: 3rem;
 }
 
 .home-error {
-  background: #fee2e2;
-  border-color: #fecaca;
-  color: #991b1b;
+  margin-bottom: 2rem;
+}
+
+.error-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.error-message {
+  color: #991b1b;
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
 }
 
 .home-empty {
-  color: #6b7280;
+  padding: 3rem 1rem;
 }
 </style>
 

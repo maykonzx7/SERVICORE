@@ -1,22 +1,25 @@
 <template>
-  <DashboardLayout>
-    <div class="service-order-details-view">
+  <div class="service-order-details-view">
       <div v-if="loading" class="view-loading">
-        Carregando ordem de serviço...
+        <Loading message="Carregando ordem de serviço..." />
       </div>
 
       <div v-else-if="error" class="view-error">
-        {{ error }}
-        <Button variant="outline" size="sm" @click="loadOrder">
-          Tentar Novamente
-        </Button>
+        <Card>
+          <div class="error-content">
+            <p class="error-message">{{ error }}</p>
+            <Button variant="outline" size="sm" @click="loadOrder">
+              Tentar Novamente
+            </Button>
+          </div>
+        </Card>
       </div>
 
       <div v-else-if="order" class="view-content">
         <div class="details-header">
           <div>
             <h1 class="details-title">Ordem de Serviço #{{ order.id.slice(0, 8) }}</h1>
-            <p class="details-subtitle">{{ order.description }}</p>
+            <p class="details-subtitle">{{ order.description || 'Sem descrição' }}</p>
           </div>
           <ServiceOrderActions
             :order="order"
@@ -24,67 +27,88 @@
             @start="handleStart"
             @complete="handleComplete"
             @cancel="handleCancel"
-            @edit="handleEdit"
+            @edit="goToEdit"
           />
         </div>
 
         <div class="details-info">
-          <div class="info-section">
-            <h3>Informações</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Status:</span>
-                <span :class="['info-value', 'status-badge', getStatusClass(order.status)]">
-                  {{ getStatusLabel(order.status) }}
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Prioridade:</span>
-                <span :class="['info-value', 'priority-badge', getPriorityClass(order.priority)]">
-                  {{ getPriorityLabel(order.priority) }}
-                </span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Valor:</span>
-                <span class="info-value">{{ formatMoney(order.value) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Criado em:</span>
-                <span class="info-value">{{ formatDateTime(order.createdAt) }}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Atualizado em:</span>
-                <span class="info-value">{{ formatDateTime(order.updatedAt) }}</span>
+          <Card>
+            <div class="info-section">
+              <h3 class="section-title">Informações Gerais</h3>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">Status:</span>
+                  <span :class="['info-value', 'status-badge', getStatusClass(order.status)]">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Prioridade:</span>
+                  <span :class="['info-value', 'priority-badge', getPriorityClass(order.priority)]">
+                    {{ getPriorityLabel(order.priority) }}
+                  </span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Valor:</span>
+                  <span class="info-value">{{ formatMoney(order.value || 0) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Criado em:</span>
+                  <span class="info-value">{{ formatDateTime(order.createdAt) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Atualizado em:</span>
+                  <span class="info-value">{{ formatDateTime(order.updatedAt) }}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
+
+          <Card v-if="order.description">
+            <div class="info-section">
+              <h3 class="section-title">Descrição</h3>
+              <p class="description-text">{{ order.description }}</p>
+            </div>
+          </Card>
+
+          <ServiceOrderAssignments
+            :order-id="order.id"
+            :assignments="order.assignments"
+            :loading="assignmentsLoading"
+            @assign="handleAssign"
+            @unassign="handleUnassign"
+          />
+
+          <ServiceOrderHistory
+            :history="history"
+            :loading="historyLoading"
+          />
+
+          <ServiceOrderTransactions
+            :service-order-id="order.id"
+            :initial-amount="order.value"
+          />
         </div>
 
-        <!-- Modal de edição -->
-        <Modal v-model="showEditModal" title="Editar Ordem de Serviço" @close="showEditModal = false">
-          <ServiceOrderForm
-            :order="order"
-            @submit="handleUpdate"
-            @cancel="showEditModal = false"
-          />
-        </Modal>
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useServiceOrder } from '../composables/useServiceOrder'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
-import Modal from '@/shared/components/ui/Modal.vue'
+import Card from '@/shared/components/ui/Card.vue'
+import Loading from '@/shared/components/ui/Loading.vue'
 import ServiceOrderActions from '../components/ServiceOrderActions.vue'
-import ServiceOrderForm from '../components/ServiceOrderForm.vue'
+import ServiceOrderAssignments from '../components/ServiceOrderAssignments.vue'
+import ServiceOrderHistory from '../components/ServiceOrderHistory.vue'
+import ServiceOrderTransactions from '../components/ServiceOrderTransactions.vue'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
 import { SERVICE_ORDER_STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/shared/constants/enums'
 import { formatMoney, formatDateTime } from '@/shared/utils/formatters'
+import type { AssignmentType, ServiceOrderHistory as ServiceOrderHistoryType } from '../types/service-order.types'
 
 const route = useRoute()
 const router = useRouter()
@@ -97,16 +121,40 @@ const {
   completeOrder,
   cancelOrder,
   updateOrder,
+  assignUser,
+  unassignUser,
+  loadHistory,
 } = useServiceOrder()
 
 const order = computed(() => currentOrder.value)
 const actionLoading = ref(false)
-const showEditModal = ref(false)
+const assignmentsLoading = ref(false)
+const historyLoading = ref(false)
+const history = ref<ServiceOrderHistoryType[]>([])
 
 onMounted(async () => {
   const id = route.params.id as string
   await loadOrderById(id)
+  await loadOrderHistory(id)
 })
+
+async function loadOrderHistory(id: string) {
+  historyLoading.value = true
+  try {
+    history.value = await loadHistory(id)
+  } catch (err: any) {
+    // Se for 404, o store já retornou array vazio, apenas logar
+    if (err.response?.status !== 404) {
+      console.error('Erro ao carregar histórico:', err)
+    }
+    // Se não for 404, manter histórico vazio
+    if (!history.value) {
+      history.value = []
+    }
+  } finally {
+    historyLoading.value = false
+  }
+}
 
 async function loadOrder() {
   const id = route.params.id as string
@@ -143,36 +191,56 @@ async function handleCancel() {
   }
 }
 
-async function handleUpdate() {
+function goToEdit() {
   if (!order.value) return
-  try {
-    await loadOrder()
-    showEditModal.value = false
-  } catch (err) {
-    // Erro já está no store
-  }
+  router.push({
+    name: ROUTE_NAMES.SERVICE_ORDER_EDIT,
+    params: { id: order.value.id },
+  })
 }
 
-function handleEdit() {
-  showEditModal.value = true
-}
-
-function getStatusLabel(status: string): string {
+function getStatusLabel(status: string | undefined): string {
+  if (!status) return 'N/A'
   const option = SERVICE_ORDER_STATUS_OPTIONS.find((opt) => opt.value === status)
   return option?.label || status
 }
 
-function getStatusClass(status: string): string {
+function getStatusClass(status: string | undefined): string {
+  if (!status) return 'status-unknown'
   return `status-${status.toLowerCase().replace('_', '-')}`
 }
 
-function getPriorityLabel(priority: string): string {
+function getPriorityLabel(priority: string | undefined): string {
+  if (!priority) return 'N/A'
   const option = PRIORITY_OPTIONS.find((opt) => opt.value === priority)
   return option?.label || priority
 }
 
-function getPriorityClass(priority: string): string {
+function getPriorityClass(priority: string | undefined): string {
+  if (!priority) return 'priority-unknown'
   return `priority-${priority.toLowerCase()}`
+}
+
+async function handleAssign(userId: string, type: AssignmentType) {
+  if (!order.value) return
+  assignmentsLoading.value = true
+  try {
+    await assignUser(order.value.id, userId, type)
+    await loadOrderHistory(order.value.id)
+  } finally {
+    assignmentsLoading.value = false
+  }
+}
+
+async function handleUnassign(userId: string) {
+  if (!order.value) return
+  assignmentsLoading.value = true
+  try {
+    await unassignUser(order.value.id, userId)
+    await loadOrderHistory(order.value.id)
+  } finally {
+    assignmentsLoading.value = false
+  }
 }
 </script>
 
@@ -183,26 +251,32 @@ function getPriorityClass(priority: string): string {
 }
 
 .view-loading {
-  text-align: center;
   padding: 3rem;
-  color: #6b7280;
 }
 
 .view-error {
-  padding: 1rem;
-  background-color: #fee2e2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  color: #991b1b;
+  margin-bottom: 1.5rem;
+}
+
+.error-content {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 1rem;
   align-items: center;
+  padding: 1rem;
+}
+
+.error-message {
+  color: #991b1b;
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
 }
 
 .view-content {
-  background: white;
-  border-radius: 0.5rem;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .details-header {
@@ -228,14 +302,26 @@ function getPriorityClass(priority: string): string {
 }
 
 .details-info {
-  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.info-section h3 {
+.info-section {
+  padding: 1.5rem;
+}
+
+.section-title {
   font-size: 1.125rem;
   font-weight: 600;
   color: #111827;
   margin: 0 0 1rem 0;
+}
+
+.description-text {
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
 }
 
 .info-grid {
@@ -296,6 +382,11 @@ function getPriorityClass(priority: string): string {
   color: #991b1b;
 }
 
+.status-unknown {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
 .priority-low {
   background-color: #d1fae5;
   color: #065f46;
@@ -314,5 +405,10 @@ function getPriorityClass(priority: string): string {
 .priority-critical {
   background-color: #f3e8ff;
   color: #6b21a8;
+}
+
+.priority-unknown {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 </style>

@@ -12,18 +12,59 @@ import type {
   UpdateOrganizationSettingsDto,
 } from '../types/organization.types'
 
-// Flag para usar mocks (definir em .env, padrão: true em desenvolvimento)
-// Se VITE_USE_MOCKS não estiver definido, usar mocks em modo desenvolvimento
-const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true' || 
-  (import.meta.env.VITE_USE_MOCKS !== 'false' && import.meta.env.DEV)
+// Flag para usar mocks (definir em .env)
+// Por padrão, usar API real (mocks apenas se explicitamente habilitado)
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
 console.log('[MOCK] USE_MOCKS:', USE_MOCKS, 'MODE:', import.meta.env.MODE, 'DEV:', import.meta.env.DEV)
 
+/**
+ * Mapeia resposta do backend (document) para frontend (cnpj)
+ */
+function mapBackendCompanyToFrontend(backendCompany: any): Company {
+  return {
+    ...backendCompany,
+    cnpj: backendCompany.document || undefined,
+  }
+}
+
+/**
+ * Mapeia dados do frontend (cnpj) para backend (document)
+ */
+function mapFrontendCompanyToBackend(data: CreateCompanyDto | UpdateCompanyDto): any {
+  const payload: any = {
+    ...data,
+  }
+  
+  // Mapear cnpj para document
+  if ('cnpj' in payload) {
+    payload.document = payload.cnpj || undefined
+    delete payload.cnpj
+  }
+  
+  // Remover campos undefined e strings vazias
+  Object.keys(payload).forEach(key => {
+    if (payload[key] === undefined || payload[key] === '') {
+      delete payload[key]
+    }
+  })
+  
+  return payload
+}
+
 export const organizationApi = {
   /**
-   * Lista empresas do usuário autenticado
+   * Lista empresas do usuário autenticado com filtros e paginação
    */
-  listCompanies: async (): Promise<ApiResponse<Company[]>> => {
+  listCompanies: async (params?: {
+    page?: number
+    limit?: number
+    search?: string
+    document?: string
+    active?: boolean
+    sortBy?: 'name' | 'createdAt' | 'document'
+    sortOrder?: 'asc' | 'desc'
+  }): Promise<PaginatedResponse<Company>> => {
     if (USE_MOCKS) {
       console.log('[MOCK] listCompanies - Usando mocks')
       await new Promise((resolve) => setTimeout(resolve, 300))
@@ -62,7 +103,31 @@ export const organizationApi = {
     }
     
     console.log('[API] listCompanies - Usando API real')
-    return apiClient.get<Company[]>(API_ENDPOINTS.COMPANIES)
+    const response = await apiClient.get<any>(API_ENDPOINTS.COMPANIES, { params })
+    // Mapear document para cnpj
+    // Backend retorna { data: [...], pagination: {...} }
+    let companiesArray: Company[] = []
+    let pagination = { page: 1, limit: 10, total: 0, totalPages: 0 }
+    
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      // Backend retornou { data: [...], pagination: {...} }
+      companiesArray = response.data.data.map(mapBackendCompanyToFrontend)
+      pagination = response.data.pagination || pagination
+    } else if (Array.isArray(response.data)) {
+      // Backend retornou array diretamente
+      companiesArray = response.data.map(mapBackendCompanyToFrontend)
+    }
+    
+    // Retornar no formato paginado
+    return { data: companiesArray, pagination } as PaginatedResponse<Company>
+  },
+
+  /**
+   * Obtém estatísticas da empresa
+   */
+  getCompanyStatistics: async (companyId: string): Promise<ApiResponse<CompanyStatistics>> => {
+    const response = await apiClient.get<any>(`${API_ENDPOINTS.COMPANY_BY_ID(companyId)}/statistics`)
+    return response as ApiResponse<CompanyStatistics>
   },
 
   /**
@@ -84,7 +149,12 @@ export const organizationApi = {
       }
     }
     
-    return apiClient.get<Company>(API_ENDPOINTS.COMPANY_BY_ID(id))
+    const response = await apiClient.get<any>(API_ENDPOINTS.COMPANY_BY_ID(id))
+    // Mapear document para cnpj
+    if (response.data) {
+      response.data = mapBackendCompanyToFrontend(response.data)
+    }
+    return response as ApiResponse<Company>
   },
 
   /**
@@ -131,7 +201,15 @@ export const organizationApi = {
       return { data: newCompany }
     }
     
-    return apiClient.post<Company>(API_ENDPOINTS.COMPANIES, data)
+    // Mapear cnpj para document (backend espera 'document')
+    const payload = mapFrontendCompanyToBackend(data)
+    
+    const response = await apiClient.post<any>(API_ENDPOINTS.COMPANIES, payload)
+    // Mapear document para cnpj na resposta
+    if (response.data) {
+      response.data = mapBackendCompanyToFrontend(response.data)
+    }
+    return response as ApiResponse<Company>
   },
 
   /**
@@ -153,7 +231,15 @@ export const organizationApi = {
       }
     }
     
-    return apiClient.put<Company>(API_ENDPOINTS.COMPANY_BY_ID(id), data)
+    // Mapear cnpj para document (backend espera 'document')
+    const payload = mapFrontendCompanyToBackend(data)
+    
+    const response = await apiClient.put<any>(API_ENDPOINTS.COMPANY_BY_ID(id), payload)
+    // Mapear document para cnpj na resposta
+    if (response.data) {
+      response.data = mapBackendCompanyToFrontend(response.data)
+    }
+    return response as ApiResponse<Company>
   },
 
   /**

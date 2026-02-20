@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/modules/auth/api/auth.api'
+import { getPermissionsFromRoles } from '@/shared/utils/permissions'
 import type {
   LoginCredentials,
   AuthResponse,
@@ -19,7 +20,14 @@ export const useAuthStore = defineStore('auth', () => {
   // ========== GETTERS ==========
   const isAuthenticated = computed(() => !!token.value)
   const userRoles = computed(() => user.value?.roles || [])
-  const userPermissions = computed(() => user.value?.permissions || [])
+  const userPermissions = computed(() => {
+    // Se o backend retornou permissões explícitas, usar elas
+    if (user.value?.permissions && user.value.permissions.length > 0) {
+      return user.value.permissions
+    }
+    // Caso contrário, mapear roles para permissões
+    return getPermissionsFromRoles(userRoles.value)
+  })
   const userName = computed(() => user.value?.name || user.value?.email || 'Usuário')
 
   // ========== ACTIONS ==========
@@ -61,20 +69,40 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     error.value = null
     try {
-      const response = await authApi.register(credentials)
-      // O backend retorna { token, user } diretamente, não dentro de { data }
-      const authData = response.data?.data || response.data
+      // Registrar usuário (backend retorna apenas dados do usuário, sem token)
+      const registerResponse = await authApi.register(credentials)
+      const userData = registerResponse.data?.data || registerResponse.data
       
-      if (!authData || !authData.token) {
-        throw new Error('Resposta inválida do servidor')
+      if (!userData || !userData.email) {
+        throw new Error('Resposta inválida do servidor ao registrar')
       }
       
-      token.value = authData.token
-      user.value = authData.user
-      
-      localStorage.setItem('token', authData.token)
-      
-      return authData
+      // Após registro bem-sucedido, fazer login automático
+      try {
+        const loginResponse = await authApi.login({
+          email: credentials.email,
+          password: credentials.password,
+        })
+        
+        // O login retorna { token, user }
+        const authData = loginResponse.data?.data || loginResponse.data
+        
+        if (!authData || !authData.token) {
+          throw new Error('Erro ao fazer login automático após registro')
+        }
+        
+        token.value = authData.token
+        user.value = authData.user
+        
+        localStorage.setItem('token', authData.token)
+        
+        return authData
+      } catch (loginErr: any) {
+        // Se o login automático falhar, ainda consideramos o registro como sucesso
+        // O usuário precisará fazer login manualmente
+        console.warn('Registro bem-sucedido, mas login automático falhou:', loginErr)
+        throw new Error('Conta criada com sucesso! Por favor, faça login.')
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || 'Erro ao registrar'
       error.value = errorMessage
@@ -104,6 +132,9 @@ export const useAuthStore = defineStore('auth', () => {
   async function loadCurrentUser() {
     if (!token.value) return
     
+    // Evitar carregar múltiplas vezes simultaneamente
+    if (loading.value) return
+    
     loading.value = true
     try {
       const response = await authApi.getCurrentUser()
@@ -112,6 +143,8 @@ export const useAuthStore = defineStore('auth', () => {
       // Se falhar, limpar token inválido
       if (err.response?.status === 401) {
         await logout()
+      } else {
+        console.error('Erro ao carregar usuário:', err)
       }
     } finally {
       loading.value = false
@@ -170,9 +203,17 @@ export const useAuthStore = defineStore('auth', () => {
     const storedToken = localStorage.getItem('token')
     if (storedToken) {
       token.value = storedToken
-      // Carregar usuário do backend
+      // Carregar usuário do backend (com roles atualizados)
       loadCurrentUser()
     }
+  }
+
+  /**
+   * Atualiza os dados do usuário do backend
+   * Útil quando os roles foram alterados e o token ainda não foi renovado
+   */
+  async function refreshUser() {
+    await loadCurrentUser()
   }
 
   // ========== RETURN ==========
@@ -192,6 +233,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     loadCurrentUser,
+    refreshUser,
     updateProfile,
     changePassword,
     hasRole,

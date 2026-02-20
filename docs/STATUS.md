@@ -165,6 +165,8 @@
 - ✅ `docs/WORKFLOW_IMPROVEMENTS.md` - Melhorias do workflow
 - ✅ `docs/IMPLEMENTATION_ROADMAP.md` - Roadmap de implementação
 - ✅ `docs/QUICK_START.md` - Guia rápido
+- ✅ `docs/NGROK_SETUP.md` - Configuração do ngrok para desenvolvimento
+- ✅ `docs/RECOMMENDATIONS.md` - Recomendações estratégicas de desenvolvimento
 - ✅ `docs/FRONTEND_DEVELOPMENT_GUIDE.md` - Guia completo de desenvolvimento frontend
 - ✅ `docs/SCREEN_AND_FEATURES_PLAN.md` - Plano completo de telas e funcionalidades
 - ✅ `docs/INTEGRATED_DEVELOPMENT_PLAN.md` - **Plano integrado mestre** (combina todos os documentos)

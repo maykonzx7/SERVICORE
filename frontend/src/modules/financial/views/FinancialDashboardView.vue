@@ -1,6 +1,5 @@
 <template>
-  <DashboardLayout>
-    <div class="financial-dashboard-view">
+  <div class="financial-dashboard-view">
       <div class="view-header">
         <h1 class="view-title">Dashboard Financeiro</h1>
         <div class="view-actions">
@@ -115,7 +114,6 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
@@ -123,7 +121,6 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCompanyStore } from '@/shared/stores/company.store'
 import { useFinancial } from '../composables/useFinancial'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import TransactionCard from '../components/TransactionCard.vue'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
@@ -161,9 +158,6 @@ async function loadData() {
     loadTransactions(1, 10),
   ])
 }
-
-import { useRouter } from 'vue-router'
-import { ROUTE_NAMES } from '@/shared/constants/routes'
 
 const router = useRouter()
 

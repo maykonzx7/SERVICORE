@@ -1,6 +1,5 @@
 <template>
-  <DashboardLayout>
-    <div class="companies-view">
+  <div class="companies-view">
       <div class="companies-header">
         <h1 class="companies-title">Empresas</h1>
         <Button @click="showCreateModal = true">
@@ -60,7 +59,6 @@
         />
       </Modal>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
@@ -69,7 +67,6 @@ import { useRouter } from 'vue-router'
 import { useCompanyStore } from '@/shared/stores/company.store'
 import { organizationApi } from '../api/organization.api'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import Modal from '@/shared/components/ui/Modal.vue'
 import CompanyForm from '../components/CompanyForm.vue'

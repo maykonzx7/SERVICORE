@@ -40,6 +40,33 @@ apiClient.interceptors.response.use(
       }
     }
     
+    // Silenciar erros 404 de endpoints que ainda não foram implementados
+    if (error.response?.status === 404) {
+      const url = error.config?.url || ''
+      const ignoredEndpoints = [
+        '/notifications/unread-count',
+        '/notifications',
+        '/transactions',
+        '/service-orders',
+        '/history',
+        '/balance',
+        '/summary',
+      ]
+      
+      // Verificar padrões mais específicos (ex: /service-orders/:id/history)
+      const ignoredPatterns = [
+        /\/service-orders\/[^/]+\/history/,
+      ]
+      
+      const matchesEndpoint = ignoredEndpoints.some(endpoint => url.includes(endpoint))
+      const matchesPattern = ignoredPatterns.some(pattern => pattern.test(url))
+      
+      if (matchesEndpoint || matchesPattern) {
+        // Marcar erro como esperado para não logar
+        ;(error as any).isExpected404 = true
+      }
+    }
+    
     // Retornar erro para tratamento específico
     return Promise.reject(error)
   }

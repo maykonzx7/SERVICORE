@@ -20,6 +20,26 @@ model User {
   @@index([active])
 }
 
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  document    String?  @unique
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  ownerId     String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([active])
+  @@index([document])
+}
+
 model ServiceOrder {
   id          String   @id @default(uuid())
   companyId   String
@@ -34,5 +54,31 @@ model ServiceOrder {
   @@index([status])
   @@index([priority])
   @@index([createdAt])
+}
+
+model Transaction {
+  id              String    @id @default(uuid())
+  companyId       String
+  type            String    // INCOME, EXPENSE
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("BRL")
+  description     String
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, PROCESSED, CANCELLED
+  serviceOrderId  String?
+  paymentMethod   String?   // CASH, PIX, CREDIT_CARD, DEBIT_CARD, BANK_TRANSFER, CHECK, OTHER
+  dueDate         DateTime?
+  rejectionReason String?
+  approvedBy      String?
+  rejectedBy      String?
+  processedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([companyId])
+  @@index([type])
+  @@index([status])
+  @@index([serviceOrderId])
+  @@index([createdAt])
+  @@index([dueDate])
 }
 

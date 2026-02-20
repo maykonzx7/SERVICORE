@@ -37,6 +37,20 @@
           {{ method.label }}
         </option>
       </select>
+      <Input
+        v-model="startDate"
+        type="date"
+        label="Data Início"
+        @input="handleDateChange"
+        class="filter-date"
+      />
+      <Input
+        v-model="endDate"
+        type="date"
+        label="Data Fim"
+        @input="handleDateChange"
+        class="filter-date"
+      />
       <Button variant="outline" size="sm" @click="handleClearFilters">
         Limpar
       </Button>
@@ -55,12 +69,14 @@ import {
   PAYMENT_METHOD_OPTIONS,
 } from '@/shared/constants/enums'
 
-const { filters, setType, setStatus, setPaymentMethod, setSearch, clearFilters } = useTransactionFilters()
+const { filters, setType, setStatus, setPaymentMethod, setSearch, setStartDate, setEndDate, clearFilters } = useTransactionFilters()
 
 const searchQuery = ref('')
 const selectedType = ref('')
 const selectedStatus = ref('')
 const selectedPaymentMethod = ref('')
+const startDate = ref('')
+const endDate = ref('')
 
 const typeOptions = TRANSACTION_TYPE_OPTIONS
 const statusOptions = TRANSACTION_STATUS_OPTIONS
@@ -102,11 +118,19 @@ function handlePaymentMethodChange() {
   emit('filter', filters.value)
 }
 
+function handleDateChange() {
+  setStartDate(startDate.value || undefined)
+  setEndDate(endDate.value || undefined)
+  emit('filter', filters.value)
+}
+
 function handleClearFilters() {
   searchQuery.value = ''
   selectedType.value = ''
   selectedStatus.value = ''
   selectedPaymentMethod.value = ''
+  startDate.value = ''
+  endDate.value = ''
   clearFilters()
   emit('filter', filters.value)
 }
@@ -141,6 +165,10 @@ const emit = defineEmits<{
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filter-date {
+  min-width: 150px;
 }
 </style>
 

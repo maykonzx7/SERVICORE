@@ -53,6 +53,14 @@ export function useTransactionFilters() {
     filters.value.endDate = endDate
   }
 
+  function setStartDate(startDate: string | undefined) {
+    filters.value.startDate = startDate
+  }
+
+  function setEndDate(endDate: string | undefined) {
+    filters.value.endDate = endDate
+  }
+
   function setServiceOrderId(serviceOrderId: string | undefined) {
     filters.value.serviceOrderId = serviceOrderId
   }
@@ -77,6 +85,8 @@ export function useTransactionFilters() {
     setPaymentMethod,
     setSearch,
     setDateRange,
+    setStartDate,
+    setEndDate,
     setServiceOrderId,
     clearFilters,
   }

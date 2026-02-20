@@ -28,3 +28,13 @@ export function sumMoney(...values: number[]): number {
   return roundMoney(values.reduce((sum, value) => sum + value, 0))
 }
 
+/**
+ * Formata valor monetário para exibição
+ */
+export function formatMoney(value: number, currency: string = 'BRL'): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: currency,
+  }).format(value)
+}
+

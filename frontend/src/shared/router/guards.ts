@@ -27,11 +27,58 @@ export function requireCompany(
 ) {
   const companyStore = useCompanyStore()
   
-  if (!companyStore.hasCompany) {
-    next({ name: ROUTE_NAMES.COMPANY_SELECTION })
-  } else {
+  // Se já tem empresa selecionada, permitir acesso
+  if (companyStore.hasCompany) {
     next()
+    return
   }
+  
+  // Se não tem empresa, tentar carregar do localStorage
+  const storedCompanyId = localStorage.getItem('currentCompanyId')
+  if (storedCompanyId) {
+    // Tentar carregar a empresa do localStorage
+    companyStore.loadCurrentCompany().then(() => {
+      if (companyStore.hasCompany) {
+        next()
+      } else {
+        // Empresa não encontrada, tentar carregar lista
+        handleCompanyLoad(next, companyStore)
+      }
+    }).catch(() => {
+      // Erro ao carregar empresa, tentar carregar lista
+      handleCompanyLoad(next, companyStore)
+    })
+  } else {
+    // Não há empresa selecionada, tentar carregar lista
+    handleCompanyLoad(next, companyStore)
+  }
+}
+
+function handleCompanyLoad(
+  next: NavigationGuardNext,
+  companyStore: ReturnType<typeof useCompanyStore>
+) {
+  companyStore.loadCompanies().then(() => {
+    if (companyStore.hasCompany) {
+      // Empresa foi selecionada automaticamente (apenas uma disponível)
+      next()
+    } else if (companyStore.companies.length === 0) {
+      // Usuário não tem empresa - permitir acesso mas mostrar aviso
+      // (empresa deveria ter sido criada no registro, mas pode ter falhado)
+      // Redirecionar para seleção que permite criar empresa
+      next({ name: ROUTE_NAMES.COMPANY_SELECTION })
+    } else if (companyStore.companies.length === 1) {
+      // Usuário tem apenas uma empresa, selecionar automaticamente
+      companyStore.setCurrentCompany(companyStore.companies[0])
+      next()
+    } else {
+      // Múltiplas empresas, redirecionar para seleção
+      next({ name: ROUTE_NAMES.COMPANY_SELECTION })
+    }
+  }).catch(() => {
+    // Erro ao carregar empresas, redirecionar para seleção
+    next({ name: ROUTE_NAMES.COMPANY_SELECTION })
+  })
 }
 
 export function requireRole(role: string) {

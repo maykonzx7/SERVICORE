@@ -105,42 +105,48 @@ Este documento define todas as telas e funcionalidades necessárias para transfo
 #### 2. Gestão de Usuários
 
 ##### 2.1 Lista de Usuários (`/users`)
-**Status:** ❌ Não implementado  
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Listagem paginada de usuários
-- [ ] Filtros (nome, email, role, status, departamento)
-- [ ] Busca por texto
+- [x] Listagem paginada de usuários
+- [x] Filtros (nome, email, role, status)
+- [x] Busca por texto
 - [ ] Ordenação (nome, email, data de criação, último acesso)
-- [ ] Visualização em tabela e cards
+- [x] Visualização em tabela
+- [ ] Visualização em cards
 - [ ] Exportação para CSV/Excel
 - [ ] Ações em lote (ativar, desativar, deletar)
-- [ ] Indicadores visuais (status, roles)
+- [x] Indicadores visuais (status, roles)
 
 ##### 2.2 Detalhes do Usuário (`/users/:id`)
-**Status:** ❌ Não implementado  
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Informações pessoais (nome, email, telefone, foto)
-- [ ] Roles e permissões atribuídas
+- [x] Informações pessoais (nome, email)
+- [x] Roles e permissões atribuídas
+- [ ] Telefone
+- [ ] Foto
 - [ ] Empresas associadas
 - [ ] Departamentos
 - [ ] Histórico de atividades
 - [ ] Sessões ativas
 - [ ] Estatísticas (ordens criadas, concluídas, etc.)
 - [ ] Timeline de eventos
-- [ ] Ações (editar, desativar, resetar senha, deletar)
+- [x] Ações (editar, atribuir roles)
+- [ ] Desativar
+- [ ] Resetar senha
+- [ ] Deletar
 
 ##### 2.3 Criar/Editar Usuário (`/users/create`, `/users/:id/edit`)
-**Status:** ❌ Não implementado  
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Formulário completo de criação/edição
+- [x] Formulário de criação/edição
+- [x] Atribuição de roles
 - [ ] Upload de foto de perfil
-- [ ] Atribuição de roles
 - [ ] Associação a empresas
 - [ ] Associação a departamentos
 - [ ] Definição de permissões customizadas
 - [ ] Envio de email de boas-vindas
 - [ ] Geração de senha temporária
-- [ ] Validação de email único
+- [x] Validação de email único
 
 ##### 2.4 Meu Perfil (`/profile`)
 **Status:** ✅ Implementado (básico)  
@@ -160,34 +166,35 @@ Este documento define todas as telas e funcionalidades necessárias para transfo
 #### 3. Gestão de Roles e Permissões
 
 ##### 3.1 Lista de Roles (`/roles`)
-**Status:** ❌ Não implementado  
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Listagem de roles do sistema
-- [ ] Roles padrão (ADMIN, COMPANY_ADMIN, MANAGER, TECHNICIAN, CLIENT)
+- [x] Listagem de roles do sistema
+- [x] Roles padrão (ADMIN, COMPANY_ADMIN, MANAGER, TECHNICIAN, CLIENT, USER)
 - [ ] Roles customizados por empresa
 - [ ] Filtros e busca
-- [ ] Indicadores (quantidade de usuários por role)
+- [x] Indicadores (quantidade de permissões por role)
 - [ ] Ações (criar, editar, deletar, duplicar)
 
-##### 3.2 Detalhes/Criar/Editar Role (`/roles/:id`, `/roles/create`)
-**Status:** ❌ Não implementado  
+##### 3.2 Detalhes/Criar/Editar Role (`/roles/:role`)
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Nome e descrição do role
-- [ ] Lista de permissões disponíveis
-- [ ] Seleção de permissões (hierárquica)
-- [ ] Preview de permissões
+- [x] Nome e descrição do role
+- [x] Lista de permissões disponíveis
+- [x] Preview de permissões
+- [ ] Seleção de permissões (hierárquica) - apenas visualização
 - [ ] Usuários com este role
 - [ ] Validação de dependências entre permissões
 - [ ] Histórico de alterações
+- [ ] Criar/Editar role (roles são fixos no sistema)
 
 ##### 3.3 Gestão de Permissões (`/permissions`)
-**Status:** ❌ Não implementado  
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Lista completa de permissões do sistema
-- [ ] Agrupamento por módulo
+- [x] Lista completa de permissões do sistema
+- [x] Agrupamento por módulo (resource)
 - [ ] Descrição de cada permissão
 - [ ] Permissões customizadas por empresa
-- [ ] Matriz de roles x permissões
+- [x] Matriz de roles x permissões (`/roles/matrix`)
 - [ ] Exportação de matriz
 
 #### 4. Gestão de Sessões
@@ -217,39 +224,43 @@ Este documento define todas as telas e funcionalidades necessárias para transfo
 #### 1. Gestão de Empresas
 
 ##### 1.1 Lista de Empresas (`/companies`)
-**Status:** ✅ Implementado (básico)  
+**Status:** ✅ Implementado (expandido)  
 **Funcionalidades:**
 - [x] Listagem de empresas
-- [ ] Filtros (nome, CNPJ, status, plano)
-- [ ] Busca avançada
-- [ ] Ordenação
-- [ ] Visualização em tabela, cards e grid
+- [x] Filtros (nome, CNPJ, status)
+- [x] Busca avançada (nome, CNPJ, email, cidade, estado)
+- [x] Ordenação (nome, data de criação, CNPJ)
+- [x] Visualização em cards
+- [ ] Visualização em tabela e grid
 - [ ] Indicadores por empresa (usuários, ordens, receita)
 - [ ] Exportação
 - [ ] Ações em lote
 
 ##### 1.2 Detalhes da Empresa (`/companies/:id`)
-**Status:** ✅ Implementado (básico)  
+**Status:** ✅ Implementado (expandido)  
 **Funcionalidades:**
 - [x] Informações básicas
-- [ ] Informações completas (CNPJ, endereço, contatos)
+- [x] Informações completas (CNPJ, endereço, contatos)
+- [x] Estatísticas gerais (endpoint criado)
 - [ ] Plano de assinatura e limites
-- [ ] Estatísticas gerais
 - [ ] Usuários da empresa
 - [ ] Departamentos
 - [ ] Histórico de atividades
 - [ ] Documentos anexados
 - [ ] Timeline de eventos
-- [ ] Ações (editar, desativar, deletar, exportar dados)
+- [x] Ações (editar, desativar)
+- [ ] Exportar dados
 
 ##### 1.3 Criar/Editar Empresa (`/companies/create`, `/companies/:id/edit`)
-**Status:** ❌ Não implementado  
+**Status:** ✅ Implementado (básico)  
 **Funcionalidades:**
-- [ ] Formulário completo
-- [ ] Validação de CNPJ
+- [x] Formulário completo
+- [x] Validação de CNPJ (Value Object criado)
 - [ ] Upload de logo
-- [ ] Endereço completo (CEP, busca automática)
-- [ ] Dados de contato (telefone, email, site)
+- [x] Endereço completo (campos disponíveis)
+- [ ] Busca automática de CEP
+- [x] Dados de contato (telefone, email)
+- [ ] Site
 - [ ] Configuração de plano
 - [ ] Definição de limites
 - [ ] Configurações iniciais

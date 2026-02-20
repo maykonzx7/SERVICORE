@@ -5,6 +5,20 @@ export const API_ENDPOINTS = {
   AUTH_LOGIN: '/auth/login',
   AUTH_LOGOUT: '/auth/logout',
   AUTH_ME: '/auth/me',
+  AUTH_REGISTER: '/auth/register',
+
+  // Users
+  USERS: '/users',
+  USER_BY_ID: (id: string) => `/users/${id}`,
+  USER_ASSIGN_ROLES: (id: string) => `/users/${id}/roles`,
+
+  // Roles
+  ROLES: '/roles',
+  ROLE_PERMISSIONS: (role: string) => `/roles/${role}/permissions`,
+  ROLES_MATRIX: '/roles/matrix/permissions',
+  
+  // Permissions
+  PERMISSIONS: '/permissions',
   
   // Service Orders
   SERVICE_ORDERS: '/service-orders',

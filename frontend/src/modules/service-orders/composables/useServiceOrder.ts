@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router'
 import { useServiceOrderStore } from '../stores/service-order.store'
 import { useCompanyStore } from '@/shared/stores/company.store'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
-import type { CreateServiceOrderDto, UpdateServiceOrderDto } from '../types/service-order.types'
+import type { CreateServiceOrderDto, UpdateServiceOrderDto, AssignmentType } from '../types/service-order.types'
 
 /**
  * Composable para facilitar uso de Service Orders
@@ -78,6 +78,9 @@ export function useServiceOrder() {
     startOrder: serviceOrderStore.startOrder,
     completeOrder: serviceOrderStore.completeOrder,
     cancelOrder: serviceOrderStore.cancelOrder,
+    assignUser: serviceOrderStore.assignUser,
+    unassignUser: serviceOrderStore.unassignUser,
+    loadHistory: serviceOrderStore.loadHistory,
     clearError: serviceOrderStore.clearError,
     // Navigation
     goToDetails,

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@shared/infrastructure/prisma.service";
+import { Prisma } from "@prisma/client";
 import { UserRepository } from "../../domain/repositories/user.repository";
 import { User } from "../../domain/entities/user";
 import { UserId } from "../../domain/value-objects/user-id";
@@ -83,6 +84,61 @@ export class PrismaUserRepository implements UserRepository {
     }
 
     return UserMapper.toDomain(data);
+  }
+
+  /**
+   * Lista usuários com paginação e filtros
+   */
+  async findMany(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    role?: string;
+    active?: boolean;
+  }): Promise<{ users: User[]; total: number }> {
+    const where: Prisma.UserWhereInput = {};
+
+    if (typeof params.active === "boolean") {
+      where.active = params.active;
+    }
+
+    if (params.role) {
+      where.roles = { has: params.role.toUpperCase() };
+    }
+
+    if (params.search) {
+      where.OR = [
+        {
+          email: {
+            contains: params.search,
+            mode: "insensitive",
+          },
+        },
+        {
+          name: {
+            contains: params.search,
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
+
+    const skip = (params.page - 1) * params.limit;
+
+    const [rows, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: params.limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return {
+      users: rows.map((row) => UserMapper.toDomain(row)),
+      total,
+    };
   }
 
   /**

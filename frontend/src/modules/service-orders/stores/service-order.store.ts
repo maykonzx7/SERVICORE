@@ -6,6 +6,7 @@ import type {
   CreateServiceOrderDto,
   UpdateServiceOrderDto,
   ServiceOrderFilters,
+  ServiceOrderHistory,
 } from '../types/service-order.types'
 import type { PaginatedResponse } from '@/shared/api/types'
 
@@ -196,6 +197,61 @@ export const useServiceOrderStore = defineStore('serviceOrder', () => {
     error.value = null
   }
 
+  async function assignUser(orderId: string, userId: string, type: 'PRIMARY' | 'AUXILIARY' | 'OBSERVER' = 'PRIMARY'): Promise<ServiceOrder> {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await serviceOrderApi.assign(orderId, userId, type)
+      updateOrderInList(response.data)
+      if (currentOrder.value?.id === orderId) {
+        currentOrder.value = response.data
+      }
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Erro ao atribuir usuário'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function unassignUser(orderId: string, userId: string): Promise<ServiceOrder> {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await serviceOrderApi.unassign(orderId, userId)
+      updateOrderInList(response.data)
+      if (currentOrder.value?.id === orderId) {
+        currentOrder.value = response.data
+      }
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Erro ao remover atribuição'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function loadHistory(orderId: string): Promise<ServiceOrderHistory[]> {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await serviceOrderApi.getHistory(orderId)
+      return response.data
+    } catch (err: any) {
+      // Se o endpoint não existe (404), retornar array vazio silenciosamente
+      if (err.response?.status === 404) {
+        console.warn('Endpoint de histórico não encontrado, retornando histórico vazio')
+        return []
+      }
+      error.value = err.response?.data?.message || 'Erro ao carregar histórico'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   function reset() {
     orders.value = []
     currentOrder.value = null
@@ -228,6 +284,9 @@ export const useServiceOrderStore = defineStore('serviceOrder', () => {
     startOrder,
     completeOrder,
     cancelOrder,
+    assignUser,
+    unassignUser,
+    loadHistory,
     clearError,
     reset,
   }

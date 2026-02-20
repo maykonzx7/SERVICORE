@@ -1,6 +1,5 @@
 <template>
-  <DashboardLayout>
-    <div class="transaction-create-view">
+  <div class="transaction-create-view">
       <div class="view-header">
         <h1 class="view-title">Criar Transação</h1>
         <Button variant="outline" @click="goBack">
@@ -12,13 +11,11 @@
         <TransactionForm @submit="handleSubmit" @cancel="goBack" />
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useFinancial } from '../composables/useFinancial'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import TransactionForm from '../components/TransactionForm.vue'
 import { ROUTE_NAMES } from '@/shared/constants/routes'

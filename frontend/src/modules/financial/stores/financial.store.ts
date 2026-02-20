@@ -39,7 +39,12 @@ export const useFinancialStore = defineStore('financial', () => {
       transactions.value.unshift(response.data)
       return response.data
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erro ao criar transação'
+      // Tratamento especial para quando o endpoint não existe
+      if (err.isEndpointNotFound || err.response?.status === 404) {
+        error.value = 'O módulo financeiro ainda não está disponível no backend. Por favor, aguarde a implementação do endpoint de transações.'
+      } else {
+        error.value = err.response?.data?.message || err.message || 'Erro ao criar transação'
+      }
       throw err
     } finally {
       loading.value = false
@@ -83,8 +88,27 @@ export const useFinancialStore = defineStore('financial', () => {
       }
       return result
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Erro ao carregar transações'
-      throw err
+      // Se o endpoint não existe (404), a API já retorna lista vazia
+      // Apenas tratar outros erros
+      if (err.response?.status !== 404) {
+        error.value = err.response?.data?.message || 'Erro ao carregar transações'
+        throw err
+      }
+      // Para 404, a API já retornou lista vazia, apenas inicializar
+      transactions.value = []
+      pagination.value = {
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      }
+      return {
+        data: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      }
     } finally {
       loading.value = false
     }

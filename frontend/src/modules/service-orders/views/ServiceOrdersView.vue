@@ -1,9 +1,8 @@
 <template>
-  <DashboardLayout>
-    <div class="service-orders-view">
+  <div class="service-orders-view">
       <div class="view-header">
         <h1 class="view-title">Ordens de Serviço</h1>
-        <Button @click="goToCreate">
+        <Button v-if="canCreate" @click="goToCreate">
           Nova Ordem
         </Button>
       </div>
@@ -11,24 +10,35 @@
       <ServiceOrderFilters @filter="handleFilter" />
 
       <div v-if="loading && !hasOrders" class="view-loading">
-        Carregando ordens de serviço...
+        <Loading message="Carregando ordens de serviço..." />
       </div>
 
       <div v-else-if="error" class="view-error">
-        {{ error }}
-        <Button variant="outline" size="sm" @click="loadOrders">
-          Tentar Novamente
-        </Button>
+        <Card>
+          <div class="error-content">
+            <p class="error-message">{{ error }}</p>
+            <Button variant="outline" size="sm" @click="handleRetry">
+              Tentar Novamente
+            </Button>
+          </div>
+        </Card>
       </div>
 
-      <div v-else-if="!hasOrders" class="view-empty">
-        <p>Nenhuma ordem de serviço encontrada.</p>
-        <Button @click="goToCreate">
-          Criar Primeira Ordem
-        </Button>
+      <div v-else-if="!hasOrders && !loading" class="view-empty">
+        <EmptyState
+          icon="📋"
+          title="Nenhuma ordem de serviço encontrada"
+          description="Comece criando sua primeira ordem de serviço"
+        >
+          <template #actions>
+            <Button v-if="canCreate" @click="goToCreate">
+              Criar Primeira Ordem
+            </Button>
+          </template>
+        </EmptyState>
       </div>
 
-      <div v-else>
+      <div v-else-if="hasOrders">
         <div class="view-options">
           <div class="view-toggle">
             <button
@@ -86,19 +96,24 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useCompanyStore } from '@/shared/stores/company.store'
+import { useAuthStore } from '@/shared/stores/auth.store'
 import { useServiceOrder } from '../composables/useServiceOrder'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
+import Card from '@/shared/components/ui/Card.vue'
+import Loading from '@/shared/components/ui/Loading.vue'
+import EmptyState from '@/shared/components/ui/EmptyState.vue'
 import ServiceOrderCard from '../components/ServiceOrderCard.vue'
 import ServiceOrderTable from '../components/ServiceOrderTable.vue'
 import ServiceOrderFilters from '../components/ServiceOrderFilters.vue'
 import type { ServiceOrderFilters as FiltersType } from '../types/service-order.types'
+
+const authStore = useAuthStore()
+const canCreate = computed(() => authStore.hasPermission('service-order:create'))
 
 const companyStore = useCompanyStore()
 const {
@@ -156,6 +171,12 @@ async function changePage(page: number) {
     }
   }
 }
+
+async function handleRetry() {
+  if (companyId.value) {
+    await loadOrders()
+  }
+}
 </script>
 
 <style scoped>
@@ -178,23 +199,31 @@ async function changePage(page: number) {
   margin: 0;
 }
 
-.view-loading,
-.view-empty {
-  text-align: center;
+.view-loading {
   padding: 3rem;
-  color: #6b7280;
+}
+
+.view-empty {
+  padding: 3rem 1rem;
 }
 
 .view-error {
-  padding: 1rem;
-  background-color: #fee2e2;
-  border: 1px solid #fecaca;
-  border-radius: 0.5rem;
-  color: #991b1b;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 1.5rem;
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.error-message {
+  color: #991b1b;
+  font-size: 0.875rem;
+  margin: 0;
+  text-align: center;
 }
 
 .view-options {

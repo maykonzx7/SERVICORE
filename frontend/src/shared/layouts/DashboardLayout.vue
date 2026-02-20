@@ -4,7 +4,7 @@
     <div class="dashboard-content">
       <Sidebar v-if="sidebarOpen" />
       <main class="main-content">
-        <slot />
+        <router-view />
       </main>
     </div>
   </div>

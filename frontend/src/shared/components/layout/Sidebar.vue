@@ -48,10 +48,26 @@ const menuItems = computed<MenuItem[]>(() => {
       icon: '🏢',
     },
     {
+      name: ROUTE_NAMES.USERS,
+      label: 'Usuários',
+      icon: '👥',
+      permission: 'user:view',
+    },
+    {
       name: ROUTE_NAMES.TRANSACTIONS,
       label: 'Financeiro',
       icon: '💰',
       permission: 'financial:view',
+    },
+    {
+      name: ROUTE_NAMES.NOTIFICATIONS,
+      label: 'Notificações',
+      icon: '🔔',
+    },
+    {
+      name: ROUTE_NAMES.SETTINGS_GENERAL,
+      label: 'Configurações',
+      icon: '⚙️',
     },
   ]
 

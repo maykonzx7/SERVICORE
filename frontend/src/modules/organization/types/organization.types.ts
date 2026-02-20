@@ -83,3 +83,23 @@ export interface UpdateOrganizationSettingsDto {
   language?: string
 }
 
+export interface CompanyStatistics {
+  totalUsers: number
+  totalServiceOrders: number
+  totalCompletedOrders: number
+  totalRevenue: number
+  totalTransactions: number
+  activeUsers: number
+  pendingOrders: number
+}
+
+export interface ListCompaniesParams {
+  page?: number
+  limit?: number
+  search?: string
+  document?: string
+  active?: boolean
+  sortBy?: 'name' | 'createdAt' | 'document'
+  sortOrder?: 'asc' | 'desc'
+}
+

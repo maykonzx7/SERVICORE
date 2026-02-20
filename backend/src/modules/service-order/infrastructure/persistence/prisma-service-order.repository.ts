@@ -46,8 +46,7 @@ export class PrismaServiceOrderRepository implements ServiceOrderRepository {
     });
 
     // TODO: Publicar eventos de domínio via RabbitMQ
-    // const events = order.domainEvents;
-    // await this.eventPublisher.publish(events);
+    // Os eventos são processados no Use Case para evitar dependência circular
     order.clearDomainEvents();
   }
 

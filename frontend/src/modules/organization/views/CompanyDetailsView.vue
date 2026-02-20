@@ -36,6 +36,36 @@
               </span>
             </div>
           </div>
+
+          <div v-if="statistics" class="info-section">
+            <h3>Estatísticas</h3>
+            <div class="statistics-grid">
+              <div class="stat-card">
+                <div class="stat-label">Total de Usuários</div>
+                <div class="stat-value">{{ statistics.totalUsers }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Ordens de Serviço</div>
+                <div class="stat-value">{{ statistics.totalServiceOrders }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Ordens Completadas</div>
+                <div class="stat-value">{{ statistics.totalCompletedOrders }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Receita Total</div>
+                <div class="stat-value">{{ formatMoney(statistics.totalRevenue) }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Ordens Pendentes</div>
+                <div class="stat-value">{{ statistics.pendingOrders }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Usuários Ativos</div>
+                <div class="stat-value">{{ statistics.activeUsers }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -59,17 +89,18 @@ import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import Modal from '@/shared/components/ui/Modal.vue'
 import CompanyForm from '../components/CompanyForm.vue'
-import type { Company, UpdateCompanyDto } from '../types/organization.types'
-import { formatCNPJ } from '@/shared/utils/formatters'
+import type { Company, UpdateCompanyDto, CompanyStatistics } from '../types/organization.types'
+import { formatCNPJ, formatMoney } from '@/shared/utils/formatters'
 
 const route = useRoute()
 
 const company = ref<Company | null>(null)
+const statistics = ref<CompanyStatistics | null>(null)
 const loading = ref(false)
 const showEditModal = ref(false)
 
 onMounted(async () => {
-  await loadCompany()
+  await Promise.all([loadCompany(), loadStatistics()])
 })
 
 async function loadCompany() {
@@ -82,6 +113,16 @@ async function loadCompany() {
     // Tratar erro
   } finally {
     loading.value = false
+  }
+}
+
+async function loadStatistics() {
+  try {
+    const id = route.params.id as string
+    const response = await organizationApi.getCompanyStatistics(id)
+    statistics.value = response.data
+  } catch (err) {
+    // Tratar erro silenciosamente
   }
 }
 
@@ -168,6 +209,33 @@ async function handleUpdateCompany(data: UpdateCompanyDto) {
 .status-inactive {
   color: #ef4444;
   font-weight: 500;
+}
+
+.statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.stat-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
 }
 </style>
 

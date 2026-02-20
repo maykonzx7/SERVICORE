@@ -25,8 +25,20 @@ async function bootstrap() {
     })
   );
 
-  // Habilitar CORS (ajustar conforme necessário)
-  app.enableCors();
+  // Habilitar CORS com configuração específica para desenvolvimento
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
+  app.enableCors({
+    origin: isDevelopment 
+      ? true // Em desenvolvimento, permitir todas as origens
+      : process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
 
   // Configurar Swagger apenas em desenvolvimento
   if (process.env.NODE_ENV !== "production") {

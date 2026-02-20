@@ -41,6 +41,7 @@ export interface UpdateTransactionDto {
   description?: string
   paymentMethod?: PaymentMethod | null
   dueDate?: string | null
+  serviceOrderId?: string | null
 }
 
 export interface TransactionFilters {

@@ -201,6 +201,50 @@ export class User extends AggregateRoot {
     return this._name;
   }
 
+  /**
+   * Atualiza o email do usuário
+   */
+  changeEmail(email: Email): void {
+    if (this._email.toString() === email.toString()) {
+      return;
+    }
+    this._email = email;
+    this.markAsUpdated();
+  }
+
+  /**
+   * Atualiza o nome do usuário
+   */
+  changeName(name: string | null): void {
+    if (this._name === name) {
+      return;
+    }
+    this._name = name;
+    this.markAsUpdated();
+  }
+
+  /**
+   * Substitui todos os roles do usuário
+   */
+  replaceRoles(roles: Role[]): void {
+    if (roles.length === 0) {
+      throw new Error("User must have at least one role");
+    }
+
+    const nextRoles = roles.map((role) => role.toString()).sort();
+    const currentRoles = this._roles.map((role) => role.toString()).sort();
+    const sameRoles =
+      nextRoles.length === currentRoles.length &&
+      nextRoles.every((role, index) => role === currentRoles[index]);
+
+    if (sameRoles) {
+      return;
+    }
+
+    this._roles = roles;
+    this.markAsUpdated();
+  }
+
   get roles(): Role[] {
     return [...this._roles];
   }

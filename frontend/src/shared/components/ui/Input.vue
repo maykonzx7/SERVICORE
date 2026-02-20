@@ -7,7 +7,7 @@
     <textarea
       v-if="type === 'textarea'"
       :id="inputId"
-      :value="modelValue"
+      :value="modelValue ?? ''"
       :placeholder="placeholder"
       :disabled="disabled"
       :required="required"
@@ -21,7 +21,7 @@
       v-else
       :id="inputId"
       :type="type"
-      :value="modelValue"
+      :value="modelValue ?? ''"
       :placeholder="placeholder"
       :disabled="disabled"
       :required="required"
@@ -39,8 +39,8 @@
 import { computed } from 'vue'
 
 interface Props {
-  modelValue: string | number
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'textarea'
+  modelValue: string | number | null | undefined
+  type?: 'text' | 'email' | 'password' | 'number' | 'date' | 'tel' | 'url' | 'textarea'
   label?: string
   placeholder?: string
   error?: string

@@ -1,8 +1,15 @@
 <template>
   <form @submit.prevent="handleSubmit" class="register-form">
     <Input
+      v-model="form.companyName"
+      label="Nome da Empresa"
+      placeholder="Nome da sua empresa"
+      :error="errors.companyName"
+      required
+    />
+    <Input
       v-model="form.name"
-      label="Nome"
+      label="Seu Nome"
       placeholder="Seu nome completo"
       :error="errors.name"
       required
@@ -34,6 +41,19 @@
       required
       autocomplete="new-password"
     />
+    <Input
+      v-model="form.phone"
+      type="tel"
+      label="Telefone"
+      placeholder="(11) 98765-4321"
+      :error="errors.phone"
+    />
+    <Input
+      v-model="form.cnpj"
+      label="CNPJ (opcional)"
+      placeholder="00.000.000/0000-00"
+      :error="errors.cnpj"
+    />
     
     <div v-if="error" class="form-error">
       {{ error }}
@@ -54,39 +74,53 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/shared/stores/auth.store'
+import { useCompanyStore } from '@/shared/stores/company.store'
+import { organizationApi } from '@/modules/organization/api/organization.api'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
 import Input from '@/shared/components/ui/Input.vue'
 import Button from '@/shared/components/ui/Button.vue'
-import { isValidEmail } from '@/shared/utils/validators'
+import { isValidEmail, isValidCNPJ } from '@/shared/utils/validators'
 import type { RegisterCredentials } from '../types/auth.types'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const companyStore = useCompanyStore()
 
-const form = ref<RegisterCredentials>({
+interface RegisterFormData extends RegisterCredentials {
+  companyName: string
+  cnpj?: string
+  phone?: string
+}
+
+const form = ref<RegisterFormData>({
+  companyName: '',
   name: '',
   email: '',
   password: '',
   confirmPassword: '',
+  phone: '',
+  cnpj: '',
 })
 
 const errors = ref<Record<string, string>>({})
-const error = computed(() => authStore.error)
-const loading = computed(() => authStore.loading)
+const error = ref<string | null>(null)
+const loading = ref(false)
 
 const isValid = computed(() => {
   return (
     form.value.name.length > 0 &&
     isValidEmail(form.value.email) &&
     form.value.password.length >= 6 &&
-    form.value.password === form.value.confirmPassword
+    form.value.password === form.value.confirmPassword &&
+    form.value.companyName.length > 0
   )
 })
 
 async function handleSubmit() {
   errors.value = {}
-
-  // Validação
+  error.value = null
+  
+  // Validação - Dados Pessoais
   if (!form.value.name.trim()) {
     errors.value.name = 'Nome é obrigatório'
     return
@@ -107,17 +141,52 @@ async function handleSubmit() {
     return
   }
 
+  // Validação - Dados da Empresa
+  if (!form.value.companyName.trim()) {
+    errors.value.companyName = 'Nome da empresa é obrigatório'
+    return
+  }
+
+  if (form.value.cnpj && !isValidCNPJ(form.value.cnpj)) {
+    errors.value.cnpj = 'CNPJ inválido'
+    return
+  }
+
+
+  loading.value = true
   try {
-    // Remover confirmPassword antes de enviar (não é necessário no backend)
+    // 1. Registrar usuário
     await authStore.register({
       email: form.value.email,
       password: form.value.password,
       name: form.value.name,
     })
     
-    router.push({ name: ROUTE_NAMES.COMPANY_SELECTION })
-  } catch (err) {
-    // Erro já está no store
+    // 2. Criar empresa automaticamente (usando email do usuário como email da empresa)
+    const companyData = {
+      name: form.value.companyName,
+      cnpj: form.value.cnpj || undefined,
+      email: form.value.email, // Usa o mesmo email do usuário
+      phone: form.value.phone || undefined,
+    }
+    
+    const companyResponse = await organizationApi.createCompany(companyData)
+    const newCompany = companyResponse.data
+    
+    if (!newCompany) {
+      throw new Error('Erro ao criar empresa')
+    }
+    
+    // 3. Selecionar empresa automaticamente
+    companyStore.setCurrentCompany(newCompany)
+    
+    // 4. Redirecionar para dashboard
+    router.push({ name: ROUTE_NAMES.DASHBOARD })
+  } catch (err: any) {
+    error.value = err.response?.data?.message || err.message || 'Erro ao criar conta'
+    console.error('Erro no registro:', err)
+  } finally {
+    loading.value = false
   }
 }
 </script>

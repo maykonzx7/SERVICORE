@@ -1,6 +1,5 @@
 <template>
-  <DashboardLayout>
-    <div class="service-order-create-view">
+  <div class="service-order-create-view">
       <div class="view-header">
         <h1 class="view-title">Criar Ordem de Serviço</h1>
         <Button variant="outline" @click="goBack">
@@ -12,13 +11,11 @@
         <ServiceOrderForm @submit="handleSubmit" @cancel="goBack" />
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useServiceOrder } from '../composables/useServiceOrder'
-import DashboardLayout from '@/shared/layouts/DashboardLayout.vue'
 import Button from '@/shared/components/ui/Button.vue'
 import ServiceOrderForm from '../components/ServiceOrderForm.vue'
 import { ROUTE_NAMES } from '@/shared/constants/routes'
